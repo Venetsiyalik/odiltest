@@ -138,5 +138,8 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
   Tailwind v4 + shadcn/ui, subdomen middleware, Supabase klient/server
   yordamchilari, boshlang'ich migratsiya (`0001_init.sql`), admin
   autentifikatsiya (Supabase Auth) va bo'sh admin/talaba sahifalari.
+- Supabase loyihasi ulangan, `0001_init.sql` bazaga qo'llangan, birinchi
+  admin foydalanuvchisi yaratilgan (`scripts/seed-admin.mjs` orqali), admin
+  login/logout brauzerda real sinovdan o'tkazilgan — ishlaydi.
 - Keyingi: **2-bosqich** — admin spravochniklar (fan/sinf/mavzu/o'quvchi)
   va savollar CRUD.

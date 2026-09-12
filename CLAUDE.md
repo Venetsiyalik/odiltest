@@ -201,5 +201,35 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
     ogohlantirishi (yuqoridagi Base UI bo'limiga qarang).
   `xlsx` npm reestridagi zaif versiya emas, SheetJS CDN'idagi tuzatilgan
   build orqali o'rnatilgan (`package.json`dagi tarball URL'ga qarang).
-- Keyingi: **4-bosqich** — o'quvchi kirishi (kirish kodi, sessiya) va test
-  topshirish ekrani.
+- **4-bosqich (O'quvchi kirishi + test topshirish):** yakunlangan — brauzerda
+  boshidan oxirigacha real sinovdan o'tkazildi (kirish kodi → test tanlash →
+  savol javoblash → yakunlash → 2/2 · 100% · baho 5 natija to'g'ri chiqdi).
+  - O'quvchi sessiyasi: `talaba_sessiya` httpOnly cookie (4 soat),
+    `sessiyalar` jadvali, IP bo'yicha 5 marta xato → 10 daqiqa blok
+    (`lib/auth/student.ts`, `app/api/auth/oquvchi`, `app/api/auth/chiqish`).
+  - 3 daqiqa harakatsizlikdan keyin avtomatik chiqish, test jarayonida
+    (`/urinish/*`) bundan mustasno (`components/student/idle-guard.tsx`).
+  - Bu bosqichda **admin Testlar CRUD** ham qurildi (`/testlar`) — texnik
+    topshiriqda alohida bosqich sifatida ajratilmagan edi, lekin o'quvchi
+    test topshirishi uchun zaruriy old shart bo'lgani uchun shu yerda
+    amalga oshirildi (`lib/actions/testlar.ts`).
+  - Test topshirish: `/api/urinish/boshlash` savol havzasini tanlaydi
+    (avtomatik — mavzu bo'yicha, yoki qo'lda tanlangan) va har urinish
+    uchun savol+variant tartibini aralashtiradi (`lib/talaba/aralashtirish.ts`),
+    `urinish_savollari.variant_tartibi`ga "ko'rsatilgan harf → asl harf"
+    xaritasi sifatida saqlaydi. `/api/urinish/javob` har javobni darhol
+    saqlaydi va to'g'riligini serverda tekshiradi (`togri_javob` klientga
+    HECH QACHON yuborilmaydi — `lib/talaba/urinish-detali.ts` buni
+    kafolatlaydi). Vaqt tugashi ham serverda (`boshlandi + vaqt_daqiqa`)
+    tekshiriladi, klientdagi taymer faqat ko'rsatkich.
+  - Baholash shkalasi (`lib/talaba/baholash.ts`): ≥90%→5, ≥70%→4, ≥50%→3,
+    aks holda 2 — texnik topshiriqda aniq foiz berilmagan, standart
+    maktab shkalasi qabul qilindi.
+  - Bitta o'quvchi bir testni ikki qurilmada bir vaqtda **mustaqil**
+    boshlay olmaydi: tugallanmagan urinish topilsa, yangisi yaratilmaydi,
+    xuddi o'shanga qaytariladi (to'liq real-time bloklash emas, lekin
+    dublikat urinish yaratilmaydi).
+  - Migratsiya 0004: `urinishlar.test_id` endi "restrict" — testni
+    o'chirish endi o'quvchi natijalarini yo'q qilib yubormaydi (buning
+    o'rniga "Yopish" ishlatiladi).
+- Keyingi: **5-bosqich** — Natijalar va PDF hisobotlar.

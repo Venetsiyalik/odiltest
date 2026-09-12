@@ -18,13 +18,14 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host") ?? "";
   const { pathname } = request.nextUrl;
 
-  // API va Next.js statik fayllariga tegilmaydi
+  // API, Next.js ichki so'rovlari va /public ostidagi statik fayllarga
+  // (kengaytmali oxirgi segment — masalan .ico, .xlsx, .png) tegilmaydi.
+  // Aks holda masalan /favicon.ico yoki /robots.txt kabi fayllar ham
+  // /admin yoki /talaba ostiga "rewrite" qilinib, 404 bo'lib qolar edi.
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/fonts") ||
-    pathname === "/favicon.ico" ||
-    pathname === "/manifest.json"
+    /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();
   }

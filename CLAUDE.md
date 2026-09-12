@@ -28,6 +28,25 @@ Lokal muhitda ikkala tomonni tekshirish uchun: `http://localhost:3000` (talaba)
 va `http://admin.localhost:3000` (admin) — zamonaviy brauzerlar `*.localhost`
 manzillarini hosts faylisiz `127.0.0.1`ga yo'naltiradi.
 
+## shadcn/ui — Base UI ekanligi (muhim eslatma)
+
+Bu loyihada `npx shadcn@latest add ...` **Radix** emas, **Base UI**
+(`@base-ui/react`) asosidagi komponentlarni o'rnatadi. Bu ikkita amaliy
+farqni keltirib chiqaradi:
+
+1. **`asChild` yo'q.** Radix'dagi `<Trigger asChild><Button/></Trigger>`
+   o'rniga Base UI'da `render` prop ishlatiladi:
+   `<Trigger render={<Button variant="outline" size="sm" />}>Matn</Trigger>`.
+2. **`<Select.Value>` xom qiymatni ko'rsatadi, tanlangan variant matnini
+   emas** — agar `Select.Root`ga `items` prop (value→label xaritasi)
+   berilmasa. Shu sababli har bir `<Select>`ga
+   [`royxatdanItemlar()`](lib/utils/select-items.ts) orqali `items` prop
+   qo'shilishi **shart**, aks holda foydalanuvchi "Informatika" o'rniga "1"
+   ko'radi (yoki value popup ochiq holatda tasodifan to'g'ri ko'rinib,
+   keyingi klikda placeholderga qaytadi — juda chalg'ituvchi bug).
+   `onValueChange` ham `(value: string | null, ...) => void` imzoga ega —
+   `null` holatini har doim `?? ""` yoki sentinel qiymat bilan qopla.
+
 ## Papka strukturasi
 
 ```
@@ -141,5 +160,10 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
 - Supabase loyihasi ulangan, `0001_init.sql` bazaga qo'llangan, birinchi
   admin foydalanuvchisi yaratilgan (`scripts/seed-admin.mjs` orqali), admin
   login/logout brauzerda real sinovdan o'tkazilgan — ishlaydi.
-- Keyingi: **2-bosqich** — admin spravochniklar (fan/sinf/mavzu/o'quvchi)
-  va savollar CRUD.
+- **2-bosqich (Spravochniklar + savollar):** yakunlangan — Fan/Sinf/Mavzu
+  CRUD (`/spravochniklar`), o'quvchilar CRUD + kirish kodi generatsiyasi
+  (`/oquvchilar`), savollar CRUD (filtr, rasm yuklash, ommaviy amallar,
+  statistika) (`/savollar`). `0002_referans_va_storage.sql` migratsiyasi
+  qo'llangan (FK'lar restrict qilindi + `savol-rasmlari` Storage bucket).
+  Barchasi brauzerda real Supabase bilan sinovdan o'tkazildi.
+- Keyingi: **3-bosqich** — savol import (Excel/Word).

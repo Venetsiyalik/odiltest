@@ -1,0 +1,52 @@
+import { NextResponse, type NextRequest } from "next/server";
+
+const ADMIN_HOST_PREFIX = "admin.";
+
+/**
+ * Ikkita mustaqil qism bitta Next.js loyihasida yashaydi:
+ *  - admin.<domen>  → /app/admin/**
+ *  - <domen>         → /app/talaba/**
+ *
+ * Route group ((admin)/(student)) ishlatilmadi, chunki ikkala tomonda ham
+ * bir xil marshrut nomi bor (masalan "natijalar") — route group'lar URL'ga
+ * ta'sir qilmagani uchun bu ikkita sahifa to'qnashadi. Shuning uchun haqiqiy
+ * papkalar (/admin, /talaba) ishlatiladi va middleware so'rovni host'ga
+ * qarab shu papkaga qayta yo'naltiradi (rewrite — brauzerdagi manzil
+ * o'zgarmaydi, foydalanuvchi buni sezmaydi).
+ */
+export function middleware(request: NextRequest) {
+  const host = request.headers.get("host") ?? "";
+  const { pathname } = request.nextUrl;
+
+  // API va Next.js statik fayllariga tegilmaydi
+  if (
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/fonts") ||
+    pathname === "/favicon.ico" ||
+    pathname === "/manifest.json"
+  ) {
+    return NextResponse.next();
+  }
+
+  const isAdminHost = host.startsWith(ADMIN_HOST_PREFIX);
+  const targetPrefix = isAdminHost ? "/admin" : "/talaba";
+
+  if (pathname.startsWith(targetPrefix)) {
+    return NextResponse.next();
+  }
+
+  // Boshqa tomonning marshrutiga to'g'ridan-to'g'ri kirishga urinish (masalan
+  // asosiy domendan /admin/dashboard so'ralsa) — 404 uchun qayta yo'naltirilmaydi,
+  // shunchaki o'z tomonining ildiziga olib boriladi.
+  const otherPrefix = isAdminHost ? "/talaba" : "/admin";
+  const cleanPath = pathname.startsWith(otherPrefix) ? "/" : pathname;
+
+  const url = request.nextUrl.clone();
+  url.pathname = `${targetPrefix}${cleanPath === "/" ? "" : cleanPath}`;
+  return NextResponse.rewrite(url);
+}
+
+export const config = {
+  matcher: ["/((?!_next/static|_next/image).*)"],
+};

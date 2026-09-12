@@ -28,6 +28,13 @@ Lokal muhitda ikkala tomonni tekshirish uchun: `http://localhost:3000` (talaba)
 va `http://admin.localhost:3000` (admin) — zamonaviy brauzerlar `*.localhost`
 manzillarini hosts faylisiz `127.0.0.1`ga yo'naltiradi.
 
+**Diqqat:** middleware `/public` ostidagi statik fayllarni (masalan
+`/favicon.ico`, `/robots.txt`, keyinchalik qo'shiladigan rasm/shrift/PDF
+fayllari) ham avtomatik aniqlab, rewrite qilmay o'tkazib yuboradi — bu
+oxirgi segmentda nuqta borligiga (`/\.[a-zA-Z0-9]+$/`) qarab aniqlanadi.
+Yangi statik marshrut qo'shsangiz, bu qoida uni allaqachon qamrab oladi;
+alohida istisno qo'shish shart emas.
+
 ## shadcn/ui — Base UI ekanligi (muhim eslatma)
 
 Bu loyihada `npx shadcn@latest add ...` **Radix** emas, **Base UI**
@@ -46,6 +53,11 @@ farqni keltirib chiqaradi:
    keyingi klikda placeholderga qaytadi — juda chalg'ituvchi bug).
    `onValueChange` ham `(value: string | null, ...) => void` imzoga ega —
    `null` holatini har doim `?? ""` yoki sentinel qiymat bilan qopla.
+3. **`<Button render={<Link .../>}>` — `nativeButton={false}` qo'shilishi
+   kerak.** `Button` standart holatda `nativeButton=true`, ya'ni `render`
+   orqali chiqarilgan element haqiqiy `<button>` bo'lishini kutadi. Uni
+   `<Link>` (yoki boshqa `<a>`) bilan almashtirsangiz, konsolda ogohlantirish
+   chiqadi — `nativeButton={false}` shuni bartaraf qiladi.
 
 ## Papka strukturasi
 
@@ -54,18 +66,27 @@ farqni keltirib chiqaradi:
   /talaba            → odiltest.uz (middleware orqali)
     /kirish  /menyu  /organish  /mashq  /test  /natijalar
   /admin             → admin.odiltest.uz (middleware orqali)
-    /kirish  /dashboard  /savollar  /testlar  /oquvchilar
-    /materiallar  /natijalar  /foydalanuvchilar
+    /kirish  /dashboard  /spravochniklar  /savollar  /savollar/import
+    /testlar  /oquvchilar  /materiallar  /natijalar  /foydalanuvchilar
   /api
     /auth/oquvchi     /auth/chiqish
     /urinish/boshlash /urinish/javob /urinish/yakunlash
-    /import/excel     /import/word
     /hisobot/pdf
 /components  /ui  /student  /admin
-/lib  supabase/  parsers/  pdf/  auth/  i18n/  utils/
+/lib  supabase/  parsers/  actions/  pdf/  auth/  i18n/  utils/
 /supabase/migrations
 /public/fonts/DejaVuSans.ttf   ← PDF uchun (5-bosqichda qo'shiladi)
 ```
+
+**Eslatma:** texnik topshiriqda savol import `/api/import/excel` va
+`/api/import/word` route handler sifatida rejalashtirilgan edi. Amalda
+Next.js Server Actions (`lib/actions/import.ts`) orqali amalga oshirildi —
+loyihaning boshqa barcha yozish amallari (CRUD) shu patternda, va Server
+Action `FormData` ichidagi `File`ni to'g'ridan-to'g'ri qabul qila oladi,
+shuning uchun alohida route handler ortiqcha bo'lardi. `/api` ostida hozircha
+faqat kelajakdagi bosqichlarga tegishli (talaba autentifikatsiyasi, test
+topshirish, PDF) marshrutlar qoladi — ular haqiqatan ham tashqi/maxsus HTTP
+semantikasi (cookie, fayl yuklab berish) talab qiladi.
 
 ## Kod uslubi
 
@@ -166,4 +187,19 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
   statistika) (`/savollar`). `0002_referans_va_storage.sql` migratsiyasi
   qo'llangan (FK'lar restrict qilindi + `savol-rasmlari` Storage bucket).
   Barchasi brauzerda real Supabase bilan sinovdan o'tkazildi.
-- Keyingi: **3-bosqich** — savol import (Excel/Word).
+- **3-bosqich (Import):** yakunlangan — Excel/CSV va Word (.docx) fayllardan
+  savol import qilish (`/savollar/import`), ko'rib chiqish jadvali
+  (tayyor/ogohlantirish/xato holati bilan), yangi fan/mavzuni tasdiqlagandan
+  keyin yaratish, takroriy savolni normalizatsiya qilingan matn bo'yicha
+  aniqlash, import natijasi va xatolar Excel qilib yuklab olinadi
+  (`lib/parsers/excel.ts`, `lib/parsers/word.ts`, `lib/actions/import.ts`).
+  `0003_mavzular_oqituvchi_huquqi.sql` migratsiyasi qo'llangan. Shu yo'l-
+  yo'lakay ikkita muhim bug topilib tuzatildi:
+  - middleware `/public` ostidagi statik fayllarni (kengaytmali yo'llarni)
+    ham noto'g'ri rewrite qilib, 404 qilib qo'yayotgan edi;
+  - Base UI `Button`ni `render={<Link/>}` bilan ishlatganda `nativeButton`
+    ogohlantirishi (yuqoridagi Base UI bo'limiga qarang).
+  `xlsx` npm reestridagi zaif versiya emas, SheetJS CDN'idagi tuzatilgan
+  build orqali o'rnatilgan (`package.json`dagi tarball URL'ga qarang).
+- Keyingi: **4-bosqich** — o'quvchi kirishi (kirish kodi, sessiya) va test
+  topshirish ekrani.

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -278,6 +279,13 @@ export function SavollarClient({
 
         <div className="grow" />
 
+        <Button
+          variant="outline"
+          nativeButton={false}
+          render={<Link href="/savollar/import" />}
+        >
+          Import qilish
+        </Button>
         <Button
           onClick={() => {
             setTahrirlanayotgan(undefined);

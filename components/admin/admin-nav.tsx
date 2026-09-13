@@ -17,6 +17,8 @@ const HAMMA_UCHUN_BOLIMLAR = [
   { href: "/natijalar", nomi: "Natijalar" },
 ] as const;
 
+const FAQAT_ADMIN_BOLIMLAR = [{ href: "/import/ishreja", nomi: "Ish reja import" }] as const;
+
 export function AdminNav({
   ismFamiliya,
   rol,
@@ -27,7 +29,11 @@ export function AdminNav({
   const pathname = usePathname();
   const bolimlar =
     rol === "admin"
-      ? [...HAMMA_UCHUN_BOLIMLAR, { href: "/foydalanuvchilar", nomi: "Foydalanuvchilar" }]
+      ? [
+          ...HAMMA_UCHUN_BOLIMLAR,
+          { href: "/foydalanuvchilar", nomi: "Foydalanuvchilar" },
+          ...FAQAT_ADMIN_BOLIMLAR,
+        ]
       : HAMMA_UCHUN_BOLIMLAR;
 
   return (

@@ -126,6 +126,10 @@ export interface Mavzu {
   // REDIZAYN.md 3-bosqich: yangi, ixtiyoriy ustunlar (0005-migratsiya).
   bolim: string | null;
   tavsif: string | null;
+  // ishreja-import.md: 0007-migratsiya — importdan kelgan mavzular turi.
+  // "baholash" (BSB/ChSB/nazorat ishi) darslar emas, shuning uchun material/
+  // test biriktirish tanlovlarida ko'rsatilmaydi (mavzular.ts§ishreja-import.md 3-bo'lim).
+  turi: "mavzu" | "baholash" | "takrorlash" | "amaliy";
   fanlar: { nomi: string } | null;
   sinflar: { nomi: string } | null;
 }
@@ -134,7 +138,7 @@ export async function mavzularniOl(): Promise<Mavzu[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("mavzular")
-    .select("id, nomi, tartib, fan_id, sinf_id, bolim, tavsif, fanlar(nomi), sinflar(nomi)")
+    .select("id, nomi, tartib, fan_id, sinf_id, bolim, tavsif, turi, fanlar(nomi), sinflar(nomi)")
     .order("tartib");
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as Mavzu[];

@@ -89,7 +89,13 @@ export function TestForma({
   const [saqlanmoqda, setSaqlanmoqda] = useState(false);
 
   const filtrlanganMavzular = useMemo(
-    () => mavzular.filter((m) => String(m.fan_id) === forma.fanId && String(m.sinf_id) === forma.sinfId),
+    // "baholash" turidagi mavzularda (BSB/ChSB) savol bo'lmaydi, shuning
+    // uchun avtomatik savol tanlash ro'yxatida ko'rsatilmaydi
+    // (ishreja-import.md 3-bo'lim).
+    () =>
+      mavzular.filter(
+        (m) => String(m.fan_id) === forma.fanId && String(m.sinf_id) === forma.sinfId && m.turi !== "baholash",
+      ),
     [mavzular, forma.fanId, forma.sinfId],
   );
   const filtrlanganSavollar = useMemo(

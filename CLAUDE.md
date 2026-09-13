@@ -733,3 +733,97 @@ rasmiy hujjatdan tashqari, operatsion so'rov).
   `https://odiltest.uz/sitemap.xml`ni qo'lda yuborish va bosh sahifani
   "URL tekshiruvi" orqali "Indekslashni so'rash" tavsiya etiladi — bular
   ham faqat Search Console interfeysida, qo'lda bajariladi.
+
+---
+
+## Mavzularni ommaviy import qilish (`ishreja-import.md`)
+
+Asosiy ikki hujjatdan (texnik topshiriq, REDIZAYN.md) mustaqil, alohida
+qo'shimcha modul — to'liq matn: `ishreja-import.md`. Maktabning e-baza
+ish reja Excel fayllaridan (sinf+fan+chorak uchun alohida fayl) `mavzular`
+jadvalini ommaviy to'ldirish uchun. Yakunlangan, `main`ga birlashtirilgan.
+
+- **Muhim moslashuv — hujjat va haqiqiy sxema farqi:** `ishreja-import.md`
+  o'zining SQL qismida `mavzular.daraja` ustunini nazarda tutgan edi, lekin
+  bu ustun hech qachon mavjud bo'lmagan — bu loyihada "daraja" doim
+  `sinflar.nomi`dan hisoblab olinadi (REDIZAYN.md 2-bosqich qarori,
+  o'zgarmas qoida). Shu sababli import fayl nomidagi darajani mavjud
+  `sinf_id`ga moslashtiradi (`sinfDarajasi()`, `lib/redizayn/daraja.ts`
+  orqali) — `daraja` ustuni QO'SHILMAYDI. Agar bitta darajada kelajakda
+  bir nechta sinf-guruh (5-A, 5-B) bo'lsa, import har biriga alohida-
+  alohida yozadi (bugun amalda faqat bitta guruh bor, shuning uchun bu
+  holat hali sinovdan o'tkazilmagan).
+- **Migratsiya** (`0007_ishreja_import.sql`): `mavzular`ga `chorak`,
+  `oquv_yili`, `uyga_vazifa`, `turi` (`mavzu`/`baholash`/`takrorlash`/
+  `amaliy`, standart `mavzu`), `ball`, `manba_fayl` — hammasi qo'shimcha,
+  eski qatorlarga ta'sir qilmaydi. Eski `unique(fan_id, sinf_id, nomi)`
+  cheklovi `unique index`ga almashtirildi — endi `chorak`/`oquv_yili`ni
+  ham hisobga oladi (bir xil mavzu turli chorak/yil uchun qayta
+  yozilishi mumkin). `importlar.turi`ga `'ishreja'` qiymati qo'shildi.
+- **Fayl nomidan metama'lumot** (`lib/ishreja/fayl-nomi.ts`, sof funksiya):
+  regex orqali sinf darajasi, fan nomi, chorak, o'quv yili va BSB/ChSB
+  belgisini ajratib oladi — hech narsa admin tomonidan tanlanmaydi
+  (2-bo'lim). Fan nomi keyin `lib/ishreja/fan-moslashtirish.ts` orqali
+  `fanlar` jadvali bilan registr/apostrofdan qat'i nazar solishtiriladi.
+- **Qator o'qish** (`lib/ishreja/qatorlar.ts`): sarlavha qatorini
+  "birinchi qator" deb emas, `T/R`+`Mavzu` so'zlari bo'yicha topadi;
+  bo'sh qatorlarni tashlaydi; `BSB`/`ChSB`/"nazorat ishi" → `baholash`,
+  aniq "Takrorlash" → `takrorlash`, "Loyiha ishi"/"Amaliy mashg'ulot" →
+  `amaliy`, qolgani → `mavzu`; `[N ball]` qismini ball sifatida ajratadi.
+  Fayllar serverga yuborilmaydi — bu funksiya to'g'ridan-to'g'ri brauzerda,
+  `File.arrayBuffer()` ustida ishlaydi (7-bo'lim talabi).
+- **Admin UI** (`/admin/import/ishreja`,
+  `components/admin/ishreja-import-client.tsx`): sudrab-tashlash zonasi
+  (yoki fayl tanlash), har fayl mustaqil o'qiladi va ko'rib chiqish
+  jadvaliga qo'shiladi — sinf/fan/chorak/yil, mavzular soni, holat belgisi
+  (✅ tayyor / ⚠️ bazada bor / ❌ xato / 🔁 variant ziddiyati). Fan
+  topilmasa, admin uni tasdiqlashi yoki mavjudlaridan birini tanlashi
+  mumkin (Select + "— Yangi fan —" matn maydoni). BSB/ChSB va BSB'siz
+  variant global almashtirgichi (standart: BSB bilan) — bir xil
+  sinf+fan+chorak uchun ikki fayl yuklansa, mos kelmagani avtomatik
+  "o'tkazib yuborish"ga o'tkaziladi (4.2-band). Bazada mavjud mavzular
+  soni sahifa yuklanishida bir marta (butun `mavzular` jadvalidan
+  fan_id/sinf_id/chorak/oquv_yili) olib kelinadi — har fayl uchun alohida
+  so'rov yubormaslik uchun.
+- **API** (`POST /api/import/ishreja`, faqat admin roli): fan
+  topilmasa/tasdiqlansa yaratadi, daraja bo'yicha mos sinf(lar)ni topadi,
+  har (fan,sinf) juftligi uchun mavjud mavzularni o'qib, takroriylarini
+  (`chorak`+`oquv_yili`+`nomi` bo'yicha) filtrlab qoldiqni yozadi.
+  "Almashtirish" tanlansa, avval o'sha chorak/yil uchun eski qatorlar
+  o'chiriladi. Har bir fayl mustaqil — bittasining xatosi qolganlariga
+  ta'sir qilmaydi.
+  - **Topilgan va tuzatilgan bug (atomiklik):** agar yangi fan
+    yaratilgandan keyin o'sha faylning mavzularini yozishda xato chiqsa
+    (masalan sxema nomuvofiqligi — bu aynan migratsiya qo'llanishidan
+    oldin sinab ko'rishda yuz berdi), fan bazada "egasiz" qolib ketardi —
+    xato ko'rsatilgan, lekin fan baribir yaratilgan bo'lardi. Endi shu
+    so'rovda yangi yaratilgan va hali birorta mavzu yozilmagan fan xato
+    chiqsa avtomatik o'chirib tashlanadi (ilova darajasidagi
+    kompensatsion "orqaga qaytarish" — "hech qanday holatda tasdiqsiz
+    bazaga yozilmasin" talabiga mos, 5-bo'lim).
+  - **Ataylab qilingan qaror — to'liq SQL tranzaksiya emas:** yozish
+    Postgres RPC/saqlangan protsedura orqali emas, oddiy Supabase JS
+    so'rovlari ketma-ketligi bilan amalga oshiriladi (loyihaning boshqa
+    import funksiyasi — `lib/actions/import.ts`dagi savol importi — ham
+    shu uslubda). Har bir fayl ichida yozish (`.insert()` bitta chaqiruv)
+    atomik, lekin bir nechta fayl orasida umumiy tranzaksiya yo'q —
+    yuqoridagi fan-orqaga-qaytarish kompensatsiyasi bu bo'shliqning eng
+    muhim qismini (egasiz fan qolishi) yopadi.
+- **Mavjud kodga qo'shimcha ta'sir:** `lib/actions/spravochniklar.ts`dagi
+  `Mavzu` interfeysi va `mavzularniOl()` so'rovi `turi`ni ham qaytaradi
+  (qo'shimcha maydon). Material biriktirish (`components/admin/
+  kontent-client.tsx`) va avtomatik test yaratishda mavzu tanlash
+  (`components/admin/test-form.tsx`) endi `turi !== "baholash"` bilan
+  filtrlanadi — BSB/ChSB qatorlari dars emas, ularga material yoki
+  savol biriktirilmaydi (3-bo'lim).
+- **Ataylab qilinmagan:** o'qituvchi uchun bitta-fayl import varianti
+  (hujjatning 7-bo'limidagi parentez ichidagi eslatma) — qabul mezonlari
+  faqat admin oqimini talab qiladi, shuning uchun hozircha qo'shilmadi;
+  endpoint qat'iy admin-only.
+- Brauzerda haqiqiy fayllar (asosiy yo'l, yangi fan yaratish, mavjud
+  bo'lmagan sinf-daraja xatosi, BSB variant ziddiyati, "bazada bor"
+  ogohlantirish + Almashtirish/O'tkazib yuborish) bilan to'liq sinovdan
+  o'tkazildi; import qilingan mavzular `/sinf/5/1` (mavjud fan) va
+  `/sinf/5/4` (yangi yaratilgan fan) sahifalarida chorak bo'yicha
+  guruhlangan holda to'g'ri ko'rindi. Sinov uchun yaratilgan mavzu/fan/
+  importlar yozuvlari keyin tozalab tashlandi.

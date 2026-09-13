@@ -78,7 +78,12 @@ export function KontentClient({
   const [isPending, startTransition] = useTransition();
 
   const filtrlanganMavzular = useMemo(
-    () => mavzular.filter((m) => String(m.fan_id) === fanId && String(m.sinf_id) === sinfId),
+    // "baholash" turidagi mavzularga (BSB/ChSB) material biriktirilmaydi
+    // (ishreja-import.md 3-bo'lim).
+    () =>
+      mavzular.filter(
+        (m) => String(m.fan_id) === fanId && String(m.sinf_id) === sinfId && m.turi !== "baholash",
+      ),
     [mavzular, fanId, sinfId],
   );
 

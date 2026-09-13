@@ -6,6 +6,7 @@ import { Sherbek } from "@/components/ui/Sherbek";
 import { Tugma } from "@/components/redizayn/tugma";
 import { Konfetti } from "@/components/redizayn/konfetti";
 import { tovushChal } from "@/lib/redizayn/tovush";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 
 export interface TabriklashMalumoti {
   darajaOshdimi?: boolean;
@@ -19,6 +20,7 @@ export interface TabriklashMalumoti {
  * bitta kartada birga ko'rsatiladi (sodda va tez).
  */
 export function TabriklashModali({ malumot, yopish }: { malumot: TabriklashMalumoti; yopish: () => void }) {
+  const { matnlar } = useMatnlar();
   const { darajaOshdimi, yangiDaraja, yangiNishonlar = [] } = malumot;
 
   useEffect(() => {
@@ -36,10 +38,10 @@ export function TabriklashModali({ malumot, yopish }: { malumot: TabriklashMalum
           <>
             <Sherbek holat="kubok" size="lg" />
             <p className="text-2xl font-extrabold" style={{ color: theme.colors.primary }}>
-              Daraja oshdi!
+              {matnlar.talaba.tabriklash.darajaOshdi}
             </p>
             <p className="text-4xl font-extrabold" style={{ color: theme.colors.accent }}>
-              {yangiDaraja}-daraja
+              {matnlar.talaba.tabriklash.darajaLabel(yangiDaraja ?? 0)}
             </p>
           </>
         )}
@@ -55,7 +57,7 @@ export function TabriklashModali({ malumot, yopish }: { malumot: TabriklashMalum
           </div>
         ))}
 
-        <Tugma onClick={yopish}>Zo&apos;r!</Tugma>
+        <Tugma onClick={yopish}>{matnlar.talaba.tabriklash.zor}</Tugma>
       </div>
     </div>
   );

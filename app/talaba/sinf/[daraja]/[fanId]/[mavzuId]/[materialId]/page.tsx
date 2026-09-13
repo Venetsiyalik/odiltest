@@ -5,6 +5,7 @@ import { materialDetaliniOl } from "@/lib/redizayn/mavzu-sahifasi";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { youtubeEmbedUrl } from "@/lib/utils/youtube";
 import { theme } from "@/lib/theme";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 import { HavolaTugma } from "@/components/redizayn/tugma";
 import { KontentKorinish } from "@/components/kontent-korinish";
@@ -31,7 +32,10 @@ export default async function MaterialSahifasi({
     notFound();
   }
 
-  const material = await materialDetaliniOl(materialIdRaqami);
+  const [material, matnlar] = await Promise.all([
+    materialDetaliniOl(materialIdRaqami),
+    joriyMatnlarniOlish(),
+  ]);
   if (!material || material.mavzuId !== mavzuIdRaqami) notFound();
 
   const oquvchi = await joriyOquvchiniOl();
@@ -57,7 +61,7 @@ export default async function MaterialSahifasi({
             {material.sarlavha}
           </h1>
           <Link href={orqagaHref} className="shrink-0 text-[16px] underline" style={{ color: theme.colors.muted }}>
-            Mavzuga qaytish
+            {matnlar.talaba.sinf.mavzugaQaytish}
           </Link>
         </div>
 
@@ -80,7 +84,7 @@ export default async function MaterialSahifasi({
               </div>
             ) : (
               <p className="p-5" style={{ color: theme.colors.muted }}>
-                Video havolasi topilmadi
+                {matnlar.talaba.sinf.videoTopilmadi}
               </p>
             )}
           </Karta>
@@ -92,7 +96,7 @@ export default async function MaterialSahifasi({
             {material.faylUrl ? (
               <PrezentatsiyaOchuvchi faylUrl={material.faylUrl} sarlavha={material.sarlavha} />
             ) : (
-              <p style={{ color: theme.colors.muted }}>Fayl topilmadi</p>
+              <p style={{ color: theme.colors.muted }}>{matnlar.talaba.sinf.faylTopilmadi}</p>
             )}
           </Karta>
         )}
@@ -102,7 +106,7 @@ export default async function MaterialSahifasi({
             <span className="text-5xl">📎</span>
             {material.faylUrl && (
               <HavolaTugma href={material.faylUrl} rang="accent">
-                Faylni yuklab olish
+                {matnlar.talaba.sinf.faylniYuklab}
               </HavolaTugma>
             )}
           </Karta>

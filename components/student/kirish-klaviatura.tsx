@@ -4,7 +4,8 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Logo } from "@/components/ui/Logo";
 import { Sherbek } from "@/components/ui/Sherbek";
-import { uz } from "@/lib/i18n/uz";
+import { TilTugmasi } from "@/components/student/til-tugmasi";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 
 const KOD_UZUNLIGI = 6;
 
@@ -17,34 +18,38 @@ const KLAVIATURA_TARTIBI = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "⌫", 
 
 export function KirishKlaviaturasi() {
   const router = useRouter();
+  const { matnlar } = useMatnlar();
   const [kod, setKod] = useState("");
   const [xato, setXato] = useState<string | null>(null);
   const [yuklanmoqda, setYuklanmoqda] = useState(false);
   const [tasdiqlangan, setTasdiqlangan] = useState<TasdiqlanganOquvchi | null>(null);
 
-  const yuborish = useCallback(async (kirishKodi: string) => {
-    setYuklanmoqda(true);
-    setXato(null);
-    try {
-      const javob = await fetch("/api/auth/oquvchi", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ kirishKodi }),
-      });
-      const natija = await javob.json();
-      if (!javob.ok) {
-        setXato(natija.xato ?? uz.talaba.kirish.kodNotogri);
+  const yuborish = useCallback(
+    async (kirishKodi: string) => {
+      setYuklanmoqda(true);
+      setXato(null);
+      try {
+        const javob = await fetch("/api/auth/oquvchi", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kirishKodi }),
+        });
+        const natija = await javob.json();
+        if (!javob.ok) {
+          setXato(natija.xato ?? matnlar.talaba.kirish.kodNotogri);
+          setKod("");
+          return;
+        }
+        setTasdiqlangan({ ismFamiliya: natija.ismFamiliya, sinfNomi: natija.sinfNomi });
+      } catch {
+        setXato(matnlar.umumiy.xatoYuzBerdi);
         setKod("");
-        return;
+      } finally {
+        setYuklanmoqda(false);
       }
-      setTasdiqlangan({ ismFamiliya: natija.ismFamiliya, sinfNomi: natija.sinfNomi });
-    } catch {
-      setXato(uz.umumiy.xatoYuzBerdi);
-      setKod("");
-    } finally {
-      setYuklanmoqda(false);
-    }
-  }, []);
+    },
+    [matnlar],
+  );
 
   function tugmaBosildi(tugma: (typeof KLAVIATURA_TARTIBI)[number]) {
     if (yuklanmoqda) return;
@@ -84,7 +89,7 @@ export function KirishKlaviaturasi() {
       <main className="flex min-h-screen flex-col items-center justify-center gap-10 p-8 text-center">
         <div className="flex flex-col gap-3">
           <p className="text-4xl font-semibold sm:text-5xl">
-            {uz.talaba.kirish.salom(tasdiqlangan.ismFamiliya, tasdiqlangan.sinfNomi)}
+            {matnlar.talaba.kirish.salom(tasdiqlangan.ismFamiliya, tasdiqlangan.sinfNomi)}
           </p>
         </div>
         <div className="flex w-full max-w-md flex-col gap-4">
@@ -93,7 +98,7 @@ export function KirishKlaviaturasi() {
             onClick={() => router.push("/menyu")}
             className="min-h-24 rounded-2xl bg-primary text-2xl font-semibold text-primary-foreground active:opacity-80"
           >
-            {uz.umumiy.davomEtish}
+            {matnlar.umumiy.davomEtish}
           </button>
           <button
             type="button"
@@ -101,7 +106,7 @@ export function KirishKlaviaturasi() {
             disabled={yuklanmoqda}
             className="min-h-24 rounded-2xl border-2 border-border text-2xl font-medium active:bg-muted disabled:opacity-50"
           >
-            {uz.talaba.kirish.buMenEmasman}
+            {matnlar.talaba.kirish.buMenEmasman}
           </button>
         </div>
       </main>
@@ -109,11 +114,14 @@ export function KirishKlaviaturasi() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-10 p-8">
+    <main className="relative flex min-h-screen flex-col items-center justify-center gap-10 p-8">
+      <div className="absolute right-6 top-6">
+        <TilTugmasi />
+      </div>
       <Logo size="xl" withText priority />
       <Sherbek holat="oddiy" size="xl" animatsiya="nafas" />
       <h1 className="text-center text-3xl font-semibold sm:text-4xl">
-        {uz.talaba.kirish.sarlavha}
+        {matnlar.talaba.kirish.sarlavha}
       </h1>
 
       <div className="flex gap-2 sm:gap-3">
@@ -128,7 +136,7 @@ export function KirishKlaviaturasi() {
       </div>
 
       {xato && <p className="max-w-sm text-center text-lg font-medium text-destructive">{xato}</p>}
-      {yuklanmoqda && <p className="text-lg text-muted-foreground">{uz.umumiy.yuklanmoqda}</p>}
+      {yuklanmoqda && <p className="text-lg text-muted-foreground">{matnlar.umumiy.yuklanmoqda}</p>}
 
       <div className="grid w-full max-w-sm grid-cols-3 gap-3">
         {KLAVIATURA_TARTIBI.map((tugma) => (

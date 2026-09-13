@@ -1,5 +1,5 @@
-import { uz } from "@/lib/i18n/uz";
 import { theme } from "@/lib/theme";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 import { Sherbek, type SherbekHolati } from "@/components/ui/Sherbek";
 import { HavolaTugma } from "@/components/redizayn/tugma";
@@ -11,7 +11,7 @@ function sherbekHolatiniTanlash(baho: number): SherbekHolati {
   return "maslahat";
 }
 
-export function TestNatijasi({
+export async function TestNatijasi({
   natijaKorsat,
   togriSoni,
   jamiSavol,
@@ -26,6 +26,7 @@ export function TestNatijasi({
   baho: number;
   vaqtTugaganmi: boolean;
 }) {
+  const matnlar = await joriyMatnlarniOlish();
   return (
     <main
       className="flex min-h-screen items-center justify-center p-6"
@@ -40,7 +41,7 @@ export function TestNatijasi({
       <Karta className="flex max-w-md flex-col items-center gap-4 p-10 text-center">
         {vaqtTugaganmi && (
           <p className="text-[18px] font-semibold" style={{ color: theme.colors.danger }}>
-            {uz.talaba.test.vaqtTugadi}
+            {matnlar.talaba.test.vaqtTugadi}
           </p>
         )}
 
@@ -51,18 +52,18 @@ export function TestNatijasi({
               {togriSoni}/{jamiSavol}
             </p>
             <p className="text-[24px]" style={{ color: theme.colors.muted }}>
-              {ballFoiz}% · baho {baho}
+              {ballFoiz}% · {matnlar.talaba.test.bahoLabel(baho)}
             </p>
           </>
         ) : (
           <>
             <Sherbek holat="oddiy" size="lg" />
-            <p className="max-w-md text-[20px]">{uz.talaba.test.natijaQabulQilindi}</p>
+            <p className="max-w-md text-[20px]">{matnlar.talaba.test.natijaQabulQilindi}</p>
           </>
         )}
 
         <HavolaTugma href="/menyu" rang="accent" className="mt-2">
-          {uz.talaba.test.menyugaQaytish}
+          {matnlar.talaba.test.menyugaQaytish}
         </HavolaTugma>
       </Karta>
     </main>

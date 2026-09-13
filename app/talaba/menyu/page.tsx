@@ -3,27 +3,32 @@ import Link from "next/link";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { TalabaChiqishTugmasi } from "@/components/student/talaba-chiqish-tugmasi";
 import { SinfRejimiTugmasi } from "@/components/student/sinf-rejimi-tugmasi";
+import { TilTugmasi } from "@/components/student/til-tugmasi";
 import { Logo } from "@/components/ui/Logo";
-import { uz } from "@/lib/i18n/uz";
-
-const KARTALAR = [
-  { href: "/organish", nomi: uz.talaba.menyu.organish, emoji: "📚" },
-  { href: "/mashq", nomi: uz.talaba.menyu.mashq, emoji: "✏️" },
-  { href: "/test", nomi: uz.talaba.menyu.testTopshirish, emoji: "📝" },
-] as const;
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 
 export default async function MenyuPage() {
   const oquvchi = await joriyOquvchiniOl();
   if (!oquvchi) redirect("/kirish");
 
+  const matnlar = await joriyMatnlarniOlish();
+  const KARTALAR = [
+    { href: "/organish", nomi: matnlar.talaba.menyu.organish, emoji: "📚" },
+    { href: "/mashq", nomi: matnlar.talaba.menyu.mashq, emoji: "✏️" },
+    { href: "/test", nomi: matnlar.talaba.menyu.testTopshirish, emoji: "📝" },
+  ] as const;
+
   return (
     <main className="flex min-h-screen flex-col gap-10 p-8">
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex flex-wrap items-center justify-between gap-4">
         <Logo size="sm" withText priority />
         <p className="text-2xl font-semibold">
-          {oquvchi.ismFamiliya} · {oquvchi.sinfNomi} sinf
+          {matnlar.talaba.menyu.foydalanuvchi(oquvchi.ismFamiliya, oquvchi.sinfNomi)}
         </p>
-        <TalabaChiqishTugmasi />
+        <div className="flex items-center gap-3">
+          <TilTugmasi />
+          <TalabaChiqishTugmasi />
+        </div>
       </header>
 
       <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-3">
@@ -44,13 +49,13 @@ export default async function MenyuPage() {
           href="/natijalar"
           className="min-h-16 rounded-xl border-2 border-border px-8 py-4 text-xl font-medium active:bg-muted"
         >
-          {uz.talaba.menyu.natijalarim}
+          {matnlar.talaba.menyu.natijalarim}
         </Link>
         <Link
           href="/nishonlar"
           className="min-h-16 rounded-xl border-2 border-border px-8 py-4 text-xl font-medium active:bg-muted"
         >
-          {uz.talaba.menyu.nishonlarim}
+          {matnlar.talaba.menyu.nishonlarim}
         </Link>
         <SinfRejimiTugmasi />
       </div>

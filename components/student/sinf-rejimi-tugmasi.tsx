@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import { SINF_REJIMI_KALITI } from "@/lib/talaba/sinf-rejimi";
 
 /**
@@ -12,6 +12,7 @@ import { SINF_REJIMI_KALITI } from "@/lib/talaba/sinf-rejimi";
  * shu qurilmada har safar ochilganda [SinfRejimiInit] orqali tiklanadi.
  */
 export function SinfRejimiTugmasi() {
+  const { matnlar } = useMatnlar();
   const [yoqilgan, setYoqilgan] = useState(false);
 
   useEffect(() => {
@@ -44,7 +45,7 @@ export function SinfRejimiTugmasi() {
         yoqilgan ? "border-primary bg-primary/10" : "border-border",
       )}
     >
-      {yoqilgan ? uz.talaba.menyu.sinfRejimiOchirish : uz.talaba.menyu.sinfRejimiYoqish}
+      {yoqilgan ? matnlar.talaba.menyu.sinfRejimiOchirish : matnlar.talaba.menyu.sinfRejimiYoqish}
     </button>
   );
 }

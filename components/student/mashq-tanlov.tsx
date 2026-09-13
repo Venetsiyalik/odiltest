@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import { theme } from "@/lib/theme";
 import { fanRangi } from "@/lib/redizayn/fan-rangi";
 import { MashqEkrani } from "@/components/student/mashq-ekrani";
@@ -20,6 +20,7 @@ export function MashqTanlov({
   fanlar: MashqFani[];
   mavzular: MashqMavzusi[];
 }) {
+  const { matnlar } = useMatnlar();
   const [fanId, setFanId] = useState<number | null>(null);
   const [mavzuId, setMavzuId] = useState<number | typeof ARALASH>(ARALASH);
   const [sessiya, setSessiya] = useState<{ sessiyaId: number; fanId: number; mavzuId: number | null } | null>(
@@ -74,21 +75,21 @@ export function MashqTanlov({
       <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 p-6 sm:p-8">
         <div className="flex items-center justify-between">
           <h1 className="text-[32px] font-extrabold sm:text-[36px]" style={{ color: theme.colors.primary }}>
-            {uz.talaba.mashq.sarlavha}
+            {matnlar.talaba.mashq.sarlavha}
           </h1>
           <Link href="/menyu" className="text-[18px] underline" style={{ color: theme.colors.muted }}>
-            {uz.umumiy.orqaga}
+            {matnlar.umumiy.orqaga}
           </Link>
         </div>
 
         {fanlar.length === 0 ? (
           <Karta className="py-8 text-center" style={{ color: theme.colors.muted }}>
-            {uz.talaba.mashq.savolYoq}
+            {matnlar.talaba.mashq.savolYoq}
           </Karta>
         ) : (
           <>
             <div className="flex flex-col gap-2">
-              <p className="text-[18px] font-bold">{uz.talaba.mashq.fanTanlash}</p>
+              <p className="text-[18px] font-bold">{matnlar.talaba.mashq.fanTanlash}</p>
               <div className="flex flex-wrap gap-2">
                 {fanlar.map((fan) => {
                   const rang = fanRangi(fan.nomi);
@@ -118,7 +119,7 @@ export function MashqTanlov({
 
             {fanId && (
               <div className="flex flex-col gap-2">
-                <p className="text-[18px] font-bold">{uz.talaba.mashq.mavzuTanlash}</p>
+                <p className="text-[18px] font-bold">{matnlar.talaba.mashq.mavzuTanlash}</p>
                 <div className="flex flex-wrap gap-2">
                   <button
                     type="button"
@@ -131,7 +132,7 @@ export function MashqTanlov({
                       color: mavzuId === ARALASH ? theme.colors.accent : theme.colors.text,
                     }}
                   >
-                    {uz.talaba.mashq.aralash}
+                    {matnlar.talaba.mashq.aralash}
                   </button>
                   {filtrlanganMavzular.map((mavzu) => (
                     <button
@@ -155,7 +156,7 @@ export function MashqTanlov({
 
             {fanId && (
               <Tugma onClick={boshlash} disabled={boshlanmoqda} rang="accent" className="w-full">
-                {boshlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.mashq.boshlash}
+                {boshlanmoqda ? matnlar.umumiy.yuklanmoqda : matnlar.talaba.mashq.boshlash}
               </Tugma>
             )}
           </>

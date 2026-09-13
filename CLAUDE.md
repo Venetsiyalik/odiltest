@@ -682,6 +682,66 @@ asl `TEXNIK-TOPSHIRIQ.md`ning 7 bosqichi ustiga qo'shilgan holda.
 
 ---
 
+## Ruscha til qo'shildi (til almashtirish, `feat/ruscha-til`)
+
+REDIZAYN.md'ning 7 bosqichidan keyin, foydalanuvchi so'rovi bilan
+qo'shilgan qo'shimcha funksiya — brauzerda to'liq sinovdan o'tkazildi
+(admin va o'quvchi Sardor Aliyev, kirish kodi `764162` bilan): tepadagi
+🇺🇿/🇷🇺 tugma bosilganda butun o'quvchi interfeysi ruschaga o'tdi va sahifa
+yangilanganda ham saqlanib qoldi, so'ng orqaga o'zbekchaga qaytarildi.
+
+**Qamrov (foydalanuvchi bilan aniq kelishilgan, 3 ta savol orqali):**
+faqat interfeys matnlari (baza kontenti — fan/mavzu/savol nomi, ma'ruza
+matni — TARJIMA QILINMAYDI, chunki noto'g'ri tarjima o'quvchiga haqiqiy
+zarar berishi mumkin); faqat o'quvchi tomoni (admin panelga tegilmadi);
+saqlash — brauzer cookie orqali (login talab qilinmaydi).
+
+- **Arxitektura:** `lib/i18n/uz.ts` — qo'lda yozilgan `export interface
+  Matnlar {...}` (barcha barg maydonlar `string` yoki `string` qaytaruvchi
+  funksiya) + `export const uz: Matnlar = {...}`. **Muhim:** `as const`
+  ISHLATILMAYDI — bu holda `uz`ning aniq satr QIYMATLARI turga aylanib,
+  `ru.ts` boshqa (ruscha) matn yoza olmay qolar edi. `lib/i18n/ru.ts` xuddi
+  shu `Matnlar` turiga qarshi to'liq ruscha tarjima bilan yozilgan.
+  `lib/i18n/joriy-til.ts` — `til` cookie'sini o'qib (`joriyTilniOlish()`)
+  yoki to'g'ridan-to'g'ri mos lug'atni qaytarib beradi
+  (`joriyMatnlarniOlish()`, Server Component'lar uchun). `lib/actions/
+  til.ts` — cookie yozuvchi Server Action (`tilniOzgartirish`, 1 yillik
+  maxAge).
+- **Server/Client chegarasi bo'yicha muhim bug va tuzatish:** avval
+  `app/talaba/layout.tsx` (Server Component) to'liq hal qilingan `matnlar`
+  obyektini (funksiya-maydonlar bilan, masalan `daraja: (n) => string`)
+  to'g'ridan-to'g'ri `<MatnlarProvideri matnlar={matnlar}>` propi sifatida
+  klient komponentga uzatgan edi — bu **har bir so'rovda** "Functions
+  cannot be passed directly to Client Components" xatosi bilan butun
+  sahifani qulatgan (`preview_logs`da o'nlab funksiya-maydon uchun alohida
+  stack trace ko'rindi). **Tuzatish:** `MatnlarProvideri` endi faqat
+  serializable `til: "uz"|"ru"` propini qabul qiladi va ichida
+  `useMemo` bilan `uz`/`ru` modulларини o'zi tanlaydi — funksiya hech
+  qachon Server→Client chegarasidan o'tmaydi. Qoida: Server komponentlarda
+  `await joriyMatnlarniOlish()` to'g'ridan-to'g'ri ishlatiladi (Context
+  kerak emas), klient komponentlarda `useMatnlar()` (`components/student/
+  matnlar-provideri.tsx`) orqali o'qiladi — `app/talaba/layout.tsx`
+  daraxtning boshida bitta marta `<MatnlarProvideri til={til}>` bilan
+  o'raydi.
+- `components/student/til-tugmasi.tsx` — 🇺🇿 UZ / 🇷🇺 RU tugmasi
+  (`useTransition` + `tilniOzgartirish()` + `router.refresh()`), Dashboard
+  va `/menyu` sarlavhasiga, shuningdek kirish kodi klaviaturasi ekraniga
+  qo'shildi.
+- **Ataylab TARJIMA QILINMAGAN (baza kontenti, qamrov qarori bo'yicha):**
+  `nishonlar` jadvalidagi 12 ta nishon nomi/tavsifi (`lib/redizayn/
+  gamifikatsiya.ts: oquvchiNishonlariniOl()` orqali `/nishonlar`
+  sahifasiga to'g'ridan-to'g'ri bazadan keladi) va `lib/redizayn/
+  avatarlar-royxati.ts`dagi avatar nomlari — brauzerda ruscha rejimda
+  ham bular o'zbekcha qolishi tasdiqlandi.
+- Barcha `app/talaba/*` (18 sahifa) va `components/student/*` +
+  `components/redizayn/*` (26 komponent) qattiq kodlangan matnlar uchun
+  maqsadli grep orqali auditdan o'tkazildi; ko'pchiligi allaqachon
+  `uz.ts` orqali yozilgan edi (faqat import/hook almashtirildi), qolgani
+  (Dashboard, `/sinf/*`, `/nishonlar`, `/offline`, qidiruv, prezentatsiya
+  ko'ruvchi, tabriklash modali) uchun yangi lug'at kalitlari qo'shildi.
+
+---
+
 ## SEO (Google qidiruv tizimida ko'rinish)
 
 Ikkala hujjat (asl texnik topshiriq va REDIZAYN.md) tugagandan keyin,

@@ -37,6 +37,7 @@ export const uz = {
       mashq: "Mashq qilish",
       testTopshirish: "Test topshirish",
       natijalarim: "Mening natijalarim",
+      nishonlarim: "🏆 Nishonlarim",
       sinfRejimiYoqish: "🔍 Sinf rejimi",
       sinfRejimiOchirish: "🔍 Sinf rejimi (yoqilgan)",
     },

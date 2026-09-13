@@ -80,7 +80,12 @@ export function MashqEkrani({
     const javob = await fetch("/api/mashq/javob", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ savolId: savol.savolId, tanlanganJavob: harf, mashqSessiyaId: sessiyaId }),
+      body: JSON.stringify({
+        savolId: savol.savolId,
+        tanlanganJavob: harf,
+        mashqSessiyaId: sessiyaId,
+        qaytaUrinish: faqatIdlar !== null,
+      }),
     }).then((r) => r.json());
 
     setNatija(javob);

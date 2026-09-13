@@ -183,3 +183,26 @@
     animation: none;
   }
 }
+
+/* Konfetti — daraja oshganda (5.1-band). Faqat transform/opacity —
+   Lottie/GIF/video taqiqlangan (2.7-band). */
+@keyframes redizayn-konfetti-tushish {
+  from {
+    transform: translateY(-10px) rotate(0deg);
+    opacity: 1;
+  }
+  to {
+    transform: translateY(110vh) rotate(540deg);
+    opacity: 0;
+  }
+}
+.redizayn-konfetti-bolagi {
+  animation-name: redizayn-konfetti-tushish;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .redizayn-konfetti-bolagi {
+    display: none;
+  }
+}

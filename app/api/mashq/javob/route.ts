@@ -1,12 +1,16 @@
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { z } from "zod";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { createServiceRoleClient } from "@/lib/supabase/server";
+import { xpBerish, qatiyatliNishoniniBerish } from "@/lib/redizayn/gamifikatsiya";
 
 const tanaSxemasi = z.object({
   savolId: z.number().int().positive(),
   tanlanganJavob: z.enum(["A", "B", "C", "D"]),
   mashqSessiyaId: z.number().int().positive().optional(),
+  // REDIZAYN.md 5.3-band ("Qat'iyatli" nishoni) — klient "xato qilingan
+  // savollarni qayta ishlash" rejimida ekanini bildiradi.
+  qaytaUrinish: z.boolean().optional(),
 });
 
 /**
@@ -24,7 +28,7 @@ export async function POST(so_rov: Request) {
   const tekshiruv = tanaSxemasi.safeParse(tana);
   if (!tekshiruv.success) return NextResponse.json({ xato: "Noto'g'ri so'rov" }, { status: 400 });
 
-  const { savolId, tanlanganJavob, mashqSessiyaId } = tekshiruv.data;
+  const { savolId, tanlanganJavob, mashqSessiyaId, qaytaUrinish } = tekshiruv.data;
   const supabase = createServiceRoleClient();
 
   const { data: savol } = await supabase
@@ -52,6 +56,19 @@ export async function POST(so_rov: Request) {
           togri_soni: sessiya.togri_soni + (togriMi ? 1 : 0),
         })
         .eq("id", mashqSessiyaId);
+
+      // REDIZAYN.md 5.1-band: "Mashqda to'g'ri javob +2". Faqat haqiqiy
+      // mashq uchun (organish o'z-o'zini tekshirishi shu yo'lni
+      // ulashadi, lekin mashqSessiyaId'siz chaqiriladi). `after()` orqali —
+      // javobni sekinlashtirmasin, lekin serverless funksiya to'liq
+      // bajarilgunicha ishlab tursin (oddiy "fire-and-forget" bunga
+      // kafolat bermaydi).
+      if (togriMi) {
+        after(async () => {
+          await xpBerish(oquvchi.id, 2, "mashq_togri");
+          if (qaytaUrinish) await qatiyatliNishoniniBerish(oquvchi.id);
+        });
+      }
     }
   }
 

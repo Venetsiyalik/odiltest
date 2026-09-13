@@ -44,6 +44,12 @@ export default async function MenyuPage() {
         >
           {uz.talaba.menyu.natijalarim}
         </Link>
+        <Link
+          href="/nishonlar"
+          className="min-h-16 rounded-xl border-2 border-border px-8 py-4 text-xl font-medium active:bg-muted"
+        >
+          {uz.talaba.menyu.nishonlarim}
+        </Link>
         <SinfRejimiTugmasi />
       </div>
     </main>

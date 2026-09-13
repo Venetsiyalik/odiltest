@@ -403,5 +403,42 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
     qilingan (ikkala domenda ham to'g'ridan-to'g'ri ochiladi, `/admin`
     yoki `/talaba`ga rewrite qilinmaydi) — chunki bu ichki, auditoriyaga
     bog'liq bo'lmagan sahifa.
-- Keyingi: **2-bosqich** — Dashboard (yangi bosh sahifa, sinflar
-  tarmog'i, sinf va fan sahifalari).
+- **2-bosqich (Dashboard):** yakunlangan — talaba tomonining bosh sahifasi
+  (`/`, ya'ni `app/talaba/page.tsx`) endi **kodsiz, hammaga ochiq**
+  Dashboard'ga aylantirildi (avval to'g'ridan-to'g'ri `/kirish`ga
+  redirect qilar edi). Brauzerda ham mehmon (sessiyasiz), ham kirish
+  kodi bilan kirgan holatda sinovdan o'tkazildi — ikkalasida ham to'g'ri
+  ishlaydi, mavjud `/kirish`, `/menyu`, admin panel avvalgidek ishlayapti
+  (regressiya yo'q).
+  - **"Daraja" — muhim moslashuv:** REDIZAYN.md yangi navigatsiyasi
+    5–11-sinf "daraja" bo'yicha ishlaydi, lekin mavjud `sinflar` jadvali
+    aniq sinf-guruhini ifodalaydi (masalan "5-B"). Jadval o'zgartirilmadi
+    (qat'iy qoida) — "daraja" `sinflar.nomi`dan regex bilan hisoblab
+    olinadi (`lib/redizayn/daraja.ts: sinfDarajasi()`). Agar kelajakda
+    bitta darajada bir nechta sinf-guruh (5-A, 5-B...) bir xil nomli
+    mavzularga ega bo'lsa, ular hozircha alohida-alohida ko'rsatiladi
+    (deduplikatsiya yo'q) — amalda hozircha faqat bitta sinf-guruh bor.
+  - `lib/redizayn/dashboard.ts` — barcha o'qish `service_role` orqali
+    (boshqa talaba-tomon funksiyalari kabi, RLS'ni chetlab o'tadi —
+    sessiyasiz mehmon uchun ham ishlashi shart).
+  - Yangi sahifalar: `/sinf/[daraja]` (fanlar kartalari, mavzusi yo'q
+    fan "Tez orada" belgisi bilan bosilmaydi), `/sinf/[daraja]/[fanId]`
+    (mavzular ro'yxati; kirish kodi bilan kirgan bo'lsa `progress`
+    jadvalidan — 6-bosqichda yaratilgan — progress-bar va ✓ belgilar).
+    Mavzu sahifasining o'zi (ma'ruza/prezentatsiya) hali yo'q — bu
+    **3-bosqich** ishi, chunki yangi `materiallar` migratsiyasi hali
+    qo'shilmagan.
+  - Qidiruv (`components/redizayn/qidiruv.tsx`) — client-side, oldindan
+    yuklangan tekis indeks (`qidiruvIndeksiniOl()`) bo'yicha filtrlaydi.
+  - **Muhim tuzatish:** `IdleGuard` (3 daqiqa harakatsizlikdan keyin
+    avtomatik chiqish) avval HAR BIR `/talaba` sahifasida ishga tushar
+    edi — bu kiosk-rejim uchun to'g'ri edi, lekin endi sessiyasiz mehmon
+    ham shu yo'lda yura oladi, uni "chiqarib yuborish" ma'nosiz.
+    `app/talaba/layout.tsx` endi `joriyOquvchiniOl()`ni chaqirib,
+    `IdleGuard`ga `faolmi={Boolean(oquvchi)}` beradi — sessiya bo'lmasa
+    taymer umuman ishga tushmaydi.
+  - "Sinflar reytingi" va "Oxirgi qo'shilgan materiallar" bo'limlari
+    hozircha "Tez orada" holatida — mos ravishda gamifikatsiya
+    (5-bosqich) va materiallar (3-bosqich) ma'lumotiga muhtoj.
+- Keyingi: **3-bosqich** — O'quv materiallari (`materiallar` migratsiyasi,
+  admin materiallar bo'limi, mavzu sahifasi, ma'ruza o'qish ekrani).

@@ -10,11 +10,12 @@ interface KartaProps extends Omit<HTMLAttributes<HTMLDivElement>, "className"> {
   className?: string;
 }
 
-export function Karta({ rangChizigi, bosiladigan, children, className, onClick, ...qolgan }: KartaProps) {
+export function Karta({ rangChizigi, bosiladigan, children, className, onClick, style, ...qolgan }: KartaProps) {
   const stil: CSSProperties = {
     borderRadius: theme.radius.lg,
     boxShadow: theme.shadow.card,
     background: theme.colors.surface,
+    ...style,
   };
 
   return (

@@ -440,5 +440,55 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
   - "Sinflar reytingi" va "Oxirgi qo'shilgan materiallar" bo'limlari
     hozircha "Tez orada" holatida — mos ravishda gamifikatsiya
     (5-bosqich) va materiallar (3-bosqich) ma'lumotiga muhtoj.
-- Keyingi: **3-bosqich** — O'quv materiallari (`materiallar` migratsiyasi,
-  admin materiallar bo'limi, mavzu sahifasi, ma'ruza o'qish ekrani).
+- **3-bosqich (O'quv materiallari):** yakunlangan — brauzerda to'liq
+  sinovdan o'tkazildi: admin ma'ruza (Markdown) va video (YouTube)
+  material qo'shdi, talaba tomonida mavzu sahifasi ikkalasini ham to'g'ri
+  ko'rsatdi, ma'ruza o'qish ekranida Markdown+KaTeX (mavjud
+  `KontentKorinish` orqali) va video iframe (`modestbranding=1&rel=0`
+  bilan) to'g'ri render bo'ldi, "ko'rildi" belgisi (`material_korildi`)
+  kirish kodi bilan kirgan o'quvchi uchun ishlashi tasdiqlandi. Sinov
+  uchun qo'shilgan namuna kontent (jumladan joke YouTube havolasi)
+  keyin bazadan tozalab tashlandi — ishlab chiqarish ma'lumotlari
+  o'zgarishsiz qoldi.
+  - **Migratsiya** (`0005_redizayn_materiallar.sql`): `mavzular`ga
+    `bolim`/`tavsif` ustunlari (ixtiyoriy, mavjud qatorlarga zarar
+    yetkazmaydi); yangi `materiallar` va `material_korildi` jadvallari;
+    yangi `oquv-materiallari` Storage bucket (50 MB — mavjud
+    `savol-rasmlari`dagi 10 MB'dan katta, chunki PDF/prezentatsiya
+    kattaroq). Mavjud `dars_materiallari`/`progress` (6-bosqich, eski
+    login-talab qiladigan O'rganish moduli) jadvallariga **hech
+    tegilmadi** — bu ikkala tizim endi qat'iy parallel: eski tizim
+    `/organish`da, yangisi `/sinf/.../mavzu`da ishlaydi.
+  - **Admin:** yangi, alohida `/admin/kontent` bo'limi (mavjud
+    `/admin/materiallar` — eski tizim uchun, o'zgartirilmadi va
+    joyida qoladi, ataylab boshqa nom bilan chalkashlik oldi olindi).
+    Fan→sinf→mavzu tanlash, mavzuning `bolim`/`tavsif`ini tahrirlash,
+    4 turdagi material (ma'ruza/prezentatsiya/video/fayl) qo'shish/
+    tahrirlash/o'chirish (`lib/actions/kontent.ts`,
+    `components/admin/kontent-{form,client}.tsx`). Ma'ruza matni uchun
+    xuddi eski tizimdagidek Markdown muharriri qayta ishlatildi (izchillik
+    uchun — XSS xavfisiz, `dangerouslySetInnerHTML` yo'q).
+  - **Talaba (kodsiz):** `/sinf/[daraja]/[fanId]/[mavzuId]` — mavzu
+    sahifasi (bolim, tavsif, material kartalari, "shu mavzu bo'yicha
+    mashq qilish" tugmasi, oldingi/keyingi mavzu navigatsiyasi);
+    `/sinf/.../[materialId]` — material o'qish/ko'rish ekrani (turi
+    bo'yicha: ma'ruza → KontentKorinish, video → YouTube iframe,
+    prezentatsiya/fayl → hozircha oddiy fayl havolasi). Qidiruv endi
+    mavzu natijasini to'g'ridan-to'g'ri mavzu sahifasiga olib boradi
+    (avval faqat fan sahifasiga olib borar edi).
+  - **Ataylab qoldirilgan (keyingi bosqichlar uchun):**
+    "prezentatsiya" turi uchun to'liq ekran slayd ko'ruvchi (PDF→WebP,
+    pdf.js) — **4-bosqich** ishi; to'g'ridan-to'g'ri video fayl yuklash
+    (hozircha faqat YouTube havolasi) va drag-and-drop tartib
+    o'zgartirish — ataylab soddalashtirildi, zarurat tug'ilsa keyinroq
+    qo'shiladi.
+  - **Arxitektura eslatmasi:** "Shu mavzu bo'yicha mashq qilish" tugmasi
+    ataylab oddiy `/mashq`ga (yoki sessiyasiz bo'lsa `/kirish`ga) havola
+    qiladi, aniq shu mavzuga "chuqur havola" qilinmaydi — chunki `/mashq`
+    o'quvchining **o'z haqiqiy sinfi**ga bog'langan (login-talab qiladi),
+    Dashboard esa istalgan darajani ko'rsatishi mumkin (masalan boshqa
+    sinf o'quvchisi 7-sinf mavzusini ko'rayotgan bo'lishi mumkin) — bu
+    ikki tizim orasidagi tabiiy chegara, ataylab shunday qoldirilgan.
+- Keyingi: **4-bosqich** — Prezentatsiya ko'ruvchi (PDF yuklash → slaydlarga
+  ajratish → smart ekran to'liq ekran rejimi, bosish zonalari, doska,
+  Wake Lock).

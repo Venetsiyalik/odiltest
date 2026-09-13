@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { uz } from "@/lib/i18n/uz";
 import type { Variant } from "@/lib/talaba/aralashtirish";
+import { theme } from "@/lib/theme";
+import { Karta } from "@/components/redizayn/karta";
+import { Tugma } from "@/components/redizayn/tugma";
+import { Belgi } from "@/components/redizayn/belgi";
+import { Sherbek } from "@/components/redizayn/sherbek";
+import { VariantTugmalari } from "@/components/redizayn/variant-tugmalari";
+import { tovushChal } from "@/lib/redizayn/tovush";
 
 interface MashqSavoli {
   savolId: number;
@@ -12,8 +18,6 @@ interface MashqSavoli {
   rasmUrl: string | null;
   variantlar: { A: string; B: string; C: string; D: string };
 }
-
-const VARIANT_HARFLAR: Variant[] = ["A", "B", "C", "D"];
 
 export function MashqEkrani({
   fanId,
@@ -74,6 +78,10 @@ export function MashqEkrani({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (natija) tovushChal(natija.togriMi ? "togri" : "xato");
+  }, [natija]);
+
   async function harfTanlash(harf: Variant) {
     if (!savol || natija) return;
     setTanlanganJavob(harf);
@@ -126,107 +134,102 @@ export function MashqEkrani({
   }
 
   return (
-    <main className="flex min-h-screen flex-col gap-6 p-6 sm:p-8">
-      <header className="flex items-center justify-between">
-        <span className="text-xl font-semibold">{uz.talaba.mashq.hisob(togriSoni, jamiSoni)}</span>
-        <button
-          type="button"
-          onClick={sessiyaniYakunlash}
-          className="min-h-16 rounded-xl border-2 border-border px-6 text-lg font-medium active:bg-muted"
-        >
-          {uz.talaba.mashq.toxtatish}
-        </button>
-      </header>
-
-      {yuklanmoqda && <p className="text-xl text-muted-foreground">{uz.umumiy.yuklanmoqda}</p>}
-
-      {!yuklanmoqda && tugadi && (
-        <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
-          <p className="text-2xl font-semibold">{uz.talaba.mashq.sessiyaYakunlandi}</p>
-          <p className="text-xl text-muted-foreground">{uz.talaba.mashq.hisob(togriSoni, jamiSoni)}</p>
-          {xatoQilinganlar.size > 0 && (
-            <button
-              type="button"
-              onClick={xatolarniQaytaIshlash}
-              className="min-h-20 rounded-2xl border-2 border-border px-8 text-xl font-semibold active:bg-muted"
-            >
-              {uz.talaba.mashq.xatolarniQaytarish} ({xatoQilinganlar.size})
-            </button>
-          )}
+    <main
+      className="min-h-screen"
+      style={{
+        background: theme.colors.bg,
+        backgroundImage: "url(/naqsh.svg)",
+        backgroundRepeat: "repeat",
+        color: theme.colors.text,
+        fontFamily: "var(--font-nunito), sans-serif",
+      }}
+    >
+      <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 sm:p-8">
+        <header className="flex items-center justify-between">
+          <Belgi>{uz.talaba.mashq.hisob(togriSoni, jamiSoni)}</Belgi>
           <button
             type="button"
             onClick={sessiyaniYakunlash}
-            className="min-h-20 rounded-2xl bg-primary px-10 text-xl font-semibold text-primary-foreground active:opacity-80"
+            className="min-h-16 px-6 text-[18px] font-bold"
+            style={{ borderRadius: theme.radius.md, border: `2px solid ${theme.colors.muted}44` }}
           >
-            {uz.talaba.test.menyugaQaytish}
+            {uz.talaba.mashq.toxtatish}
           </button>
-        </div>
-      )}
+        </header>
 
-      {!yuklanmoqda && savol && (
-        <section className="flex flex-1 flex-col gap-6">
-          <p className="text-xl font-medium sm:text-2xl">{savol.matn}</p>
-          {savol.rasmUrl && (
-            <Image
-              src={savol.rasmUrl}
-              alt=""
-              width={500}
-              height={300}
-              className="max-h-64 w-auto rounded-lg border object-contain"
-            />
-          )}
+        {yuklanmoqda && (
+          <p className="text-[20px]" style={{ color: theme.colors.muted }}>
+            {uz.umumiy.yuklanmoqda}
+          </p>
+        )}
 
-          <div className="flex flex-col gap-3">
-            {VARIANT_HARFLAR.map((harf) => {
-              const tanlangan = tanlanganJavob === harf;
-              const buTogriJavob = natija && natija.togriJavob === harf;
-              return (
-                <button
-                  key={harf}
-                  type="button"
-                  onClick={() => harfTanlash(harf)}
-                  disabled={Boolean(natija)}
-                  className={cn(
-                    "flex min-h-24 w-full items-center gap-4 rounded-2xl border-2 px-6 text-left text-xl font-medium transition-colors sm:text-2xl",
-                    buTogriJavob && "border-green-600 bg-green-50",
-                    tanlangan && !buTogriJavob && "border-destructive bg-destructive/10",
-                    !tanlangan && !buTogriJavob && "border-border",
-                  )}
-                >
-                  <span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 text-lg font-bold">
-                    {harf}
-                  </span>
-                  {savol.variantlar[harf]}
-                </button>
-              );
-            })}
+        {!yuklanmoqda && tugadi && (
+          <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
+            <Sherbek holat={togriSoni >= jamiSoni / 2 ? "zor" : "maslahat"} size="lg" />
+            <p className="text-[28px] font-extrabold" style={{ color: theme.colors.primary }}>
+              {uz.talaba.mashq.sessiyaYakunlandi}
+            </p>
+            <p className="text-[20px]" style={{ color: theme.colors.muted }}>
+              {uz.talaba.mashq.hisob(togriSoni, jamiSoni)}
+            </p>
+            {xatoQilinganlar.size > 0 && (
+              <Tugma onClick={xatolarniQaytaIshlash} rang="outline">
+                {uz.talaba.mashq.xatolarniQaytarish} ({xatoQilinganlar.size})
+              </Tugma>
+            )}
+            <Tugma onClick={sessiyaniYakunlash} rang="accent">
+              {uz.talaba.test.menyugaQaytish}
+            </Tugma>
           </div>
+        )}
 
-          {natija && (
-            <div
-              className={cn(
-                "flex flex-col gap-2 rounded-2xl border-2 p-6",
-                natija.togriMi ? "border-green-600 bg-green-50" : "border-destructive bg-destructive/5",
-              )}
-            >
-              <p className="text-xl font-semibold">
-                {natija.togriMi ? uz.talaba.organish.togri : uz.talaba.organish.notogri}
-              </p>
-              {!natija.togriMi && (
-                <p className="text-lg">{uz.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
-              )}
-              {natija.izoh && <p className="text-lg text-muted-foreground">{natija.izoh}</p>}
-              <button
-                type="button"
-                onClick={keyingiSavol}
-                className="mt-2 min-h-16 w-fit rounded-xl bg-primary px-8 text-xl font-semibold text-primary-foreground active:opacity-80"
-              >
-                {uz.talaba.mashq.keyingiSavol}
-              </button>
-            </div>
-          )}
-        </section>
-      )}
+        {!yuklanmoqda && savol && (
+          <section className="flex flex-1 flex-col gap-6">
+            <p className="text-[22px] font-semibold sm:text-[26px]">{savol.matn}</p>
+            {savol.rasmUrl && (
+              <Image
+                src={savol.rasmUrl}
+                alt=""
+                width={500}
+                height={300}
+                className="max-h-64 w-auto object-contain"
+                style={{ borderRadius: theme.radius.md, border: `1px solid ${theme.colors.muted}33` }}
+              />
+            )}
+
+            <VariantTugmalari
+              variantlar={savol.variantlar}
+              tanlanganJavob={tanlanganJavob}
+              togriJavob={natija?.togriJavob ?? null}
+              onTanlash={harfTanlash}
+              ochilganmi={Boolean(natija)}
+            />
+
+            {natija && (
+              <Karta className="flex flex-col items-center gap-3 text-center">
+                <Sherbek holat={natija.togriMi ? "tugri" : "xato"} />
+                <p
+                  className="text-[20px] font-bold"
+                  style={{ color: natija.togriMi ? theme.colors.success : theme.colors.danger }}
+                >
+                  {natija.togriMi ? uz.talaba.organish.togri : uz.talaba.organish.notogri}
+                </p>
+                {!natija.togriMi && (
+                  <p className="text-[18px]">{uz.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
+                )}
+                {natija.izoh && (
+                  <p className="text-[16px]" style={{ color: theme.colors.muted }}>
+                    {natija.izoh}
+                  </p>
+                )}
+                <Tugma onClick={keyingiSavol} rang="primary">
+                  {uz.talaba.mashq.keyingiSavol}
+                </Tugma>
+              </Karta>
+            )}
+          </section>
+        )}
+      </div>
     </main>
   );
 }

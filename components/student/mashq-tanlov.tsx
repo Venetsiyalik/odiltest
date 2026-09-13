@@ -4,7 +4,11 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { uz } from "@/lib/i18n/uz";
+import { theme } from "@/lib/theme";
+import { fanRangi } from "@/lib/redizayn/fan-rangi";
 import { MashqEkrani } from "@/components/student/mashq-ekrani";
+import { Tugma } from "@/components/redizayn/tugma";
+import { Karta } from "@/components/redizayn/karta";
 import type { MashqFani, MashqMavzusi } from "@/lib/talaba/mashq";
 
 const ARALASH = "aralash";
@@ -57,83 +61,106 @@ export function MashqTanlov({
   }
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold">{uz.talaba.mashq.sarlavha}</h1>
-        <Link href="/menyu" className="text-lg text-muted-foreground underline">
-          {uz.umumiy.orqaga}
-        </Link>
-      </div>
+    <main
+      className="min-h-screen"
+      style={{
+        background: theme.colors.bg,
+        backgroundImage: "url(/naqsh.svg)",
+        backgroundRepeat: "repeat",
+        color: theme.colors.text,
+        fontFamily: "var(--font-nunito), sans-serif",
+      }}
+    >
+      <div className="mx-auto flex min-h-screen max-w-xl flex-col gap-6 p-6 sm:p-8">
+        <div className="flex items-center justify-between">
+          <h1 className="text-[32px] font-extrabold sm:text-[36px]" style={{ color: theme.colors.primary }}>
+            {uz.talaba.mashq.sarlavha}
+          </h1>
+          <Link href="/menyu" className="text-[18px] underline" style={{ color: theme.colors.muted }}>
+            {uz.umumiy.orqaga}
+          </Link>
+        </div>
 
-      {fanlar.length === 0 ? (
-        <p className="text-xl text-muted-foreground">{uz.talaba.mashq.savolYoq}</p>
-      ) : (
-        <>
-          <div className="flex flex-col gap-2">
-            <p className="text-lg font-medium">{uz.talaba.mashq.fanTanlash}</p>
-            <div className="flex flex-wrap gap-2">
-              {fanlar.map((fan) => (
-                <button
-                  key={fan.id}
-                  type="button"
-                  onClick={() => {
-                    setFanId(fan.id);
-                    setMavzuId(ARALASH);
-                  }}
-                  className={cn(
-                    "min-h-16 rounded-xl border-2 px-6 text-lg font-medium active:bg-muted",
-                    fanId === fan.id ? "border-primary bg-primary/10" : "border-border",
-                  )}
-                >
-                  {fan.nomi}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {fanId && (
+        {fanlar.length === 0 ? (
+          <Karta className="py-8 text-center" style={{ color: theme.colors.muted }}>
+            {uz.talaba.mashq.savolYoq}
+          </Karta>
+        ) : (
+          <>
             <div className="flex flex-col gap-2">
-              <p className="text-lg font-medium">{uz.talaba.mashq.mavzuTanlash}</p>
+              <p className="text-[18px] font-bold">{uz.talaba.mashq.fanTanlash}</p>
               <div className="flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => setMavzuId(ARALASH)}
-                  className={cn(
-                    "min-h-16 rounded-xl border-2 px-6 text-lg font-medium active:bg-muted",
-                    mavzuId === ARALASH ? "border-primary bg-primary/10" : "border-border",
-                  )}
-                >
-                  {uz.talaba.mashq.aralash}
-                </button>
-                {filtrlanganMavzular.map((mavzu) => (
-                  <button
-                    key={mavzu.id}
-                    type="button"
-                    onClick={() => setMavzuId(mavzu.id)}
-                    className={cn(
-                      "min-h-16 rounded-xl border-2 px-6 text-lg font-medium active:bg-muted",
-                      mavzuId === mavzu.id ? "border-primary bg-primary/10" : "border-border",
-                    )}
-                  >
-                    {mavzu.nomi}
-                  </button>
-                ))}
+                {fanlar.map((fan) => {
+                  const rang = fanRangi(fan.nomi);
+                  const faolmi = fanId === fan.id;
+                  return (
+                    <button
+                      key={fan.id}
+                      type="button"
+                      onClick={() => {
+                        setFanId(fan.id);
+                        setMavzuId(ARALASH);
+                      }}
+                      className={cn("min-h-16 px-6 text-[18px] font-bold transition-colors", !faolmi && "text-inherit")}
+                      style={{
+                        borderRadius: theme.radius.md,
+                        border: `2px solid ${faolmi ? rang : `${theme.colors.muted}44`}`,
+                        background: faolmi ? `${rang}22` : theme.colors.surface,
+                        color: faolmi ? rang : theme.colors.text,
+                      }}
+                    >
+                      {fan.nomi}
+                    </button>
+                  );
+                })}
               </div>
             </div>
-          )}
 
-          {fanId && (
-            <button
-              type="button"
-              onClick={boshlash}
-              disabled={boshlanmoqda}
-              className="min-h-20 rounded-2xl bg-primary text-2xl font-semibold text-primary-foreground active:opacity-80 disabled:opacity-50"
-            >
-              {boshlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.mashq.boshlash}
-            </button>
-          )}
-        </>
-      )}
+            {fanId && (
+              <div className="flex flex-col gap-2">
+                <p className="text-[18px] font-bold">{uz.talaba.mashq.mavzuTanlash}</p>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setMavzuId(ARALASH)}
+                    className="min-h-16 px-6 text-[18px] font-bold"
+                    style={{
+                      borderRadius: theme.radius.md,
+                      border: `2px solid ${mavzuId === ARALASH ? theme.colors.accent : `${theme.colors.muted}44`}`,
+                      background: mavzuId === ARALASH ? `${theme.colors.accent}22` : theme.colors.surface,
+                      color: mavzuId === ARALASH ? theme.colors.accent : theme.colors.text,
+                    }}
+                  >
+                    {uz.talaba.mashq.aralash}
+                  </button>
+                  {filtrlanganMavzular.map((mavzu) => (
+                    <button
+                      key={mavzu.id}
+                      type="button"
+                      onClick={() => setMavzuId(mavzu.id)}
+                      className="min-h-16 px-6 text-[18px] font-bold"
+                      style={{
+                        borderRadius: theme.radius.md,
+                        border: `2px solid ${mavzuId === mavzu.id ? theme.colors.accent : `${theme.colors.muted}44`}`,
+                        background: mavzuId === mavzu.id ? `${theme.colors.accent}22` : theme.colors.surface,
+                        color: mavzuId === mavzu.id ? theme.colors.accent : theme.colors.text,
+                      }}
+                    >
+                      {mavzu.nomi}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {fanId && (
+              <Tugma onClick={boshlash} disabled={boshlanmoqda} rang="accent" className="w-full">
+                {boshlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.mashq.boshlash}
+              </Tugma>
+            )}
+          </>
+        )}
+      </div>
     </main>
   );
 }

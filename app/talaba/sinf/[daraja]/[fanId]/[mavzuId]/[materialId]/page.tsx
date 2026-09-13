@@ -9,6 +9,7 @@ import { Karta } from "@/components/redizayn/karta";
 import { HavolaTugma } from "@/components/redizayn/tugma";
 import { KontentKorinish } from "@/components/kontent-korinish";
 import { KorildiBelgilash } from "@/components/student/korildi-belgilash";
+import { PrezentatsiyaOchuvchi } from "@/components/redizayn/prezentatsiya-ochuvchi";
 
 export default async function MaterialSahifasi({
   params,
@@ -88,14 +89,10 @@ export default async function MaterialSahifasi({
         {material.turi === "prezentatsiya" && (
           <Karta className="flex flex-col items-center gap-4 py-10 text-center">
             <span className="text-5xl">📊</span>
-            <p style={{ color: theme.colors.muted }}>
-              To&apos;liq ekran slayd ko&apos;ruvchi keyingi bosqichda qo&apos;shiladi. Hozircha PDF&apos;ni
-              to&apos;g&apos;ridan-to&apos;g&apos;ri ochishingiz mumkin.
-            </p>
-            {material.faylUrl && (
-              <HavolaTugma href={material.faylUrl} rang="accent">
-                PDF&apos;ni ochish
-              </HavolaTugma>
+            {material.faylUrl ? (
+              <PrezentatsiyaOchuvchi faylUrl={material.faylUrl} sarlavha={material.sarlavha} />
+            ) : (
+              <p style={{ color: theme.colors.muted }}>Fayl topilmadi</p>
             )}
           </Karta>
         )}

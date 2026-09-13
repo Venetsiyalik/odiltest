@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { prezentatsiyaHolatiniTinglash } from "@/lib/redizayn/prezentatsiya-holati";
 
 const IDLE_MUDDATI_MS = 3 * 60 * 1000; // 3 daqiqa (3.3-band)
 
@@ -19,9 +20,12 @@ export function IdleGuard({ faolmi = true }: { faolmi?: boolean }) {
   const pathname = usePathname();
   const router = useRouter();
   const taymerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [prezentatsiyaOchiq, setPrezentatsiyaOchiq] = useState(false);
+
+  useEffect(() => prezentatsiyaHolatiniTinglash(setPrezentatsiyaOchiq), []);
 
   useEffect(() => {
-    if (!faolmi || pathname.startsWith("/urinish") || pathname === "/kirish") {
+    if (!faolmi || prezentatsiyaOchiq || pathname.startsWith("/urinish") || pathname === "/kirish") {
       if (taymerRef.current) clearTimeout(taymerRef.current);
       return;
     }
@@ -43,7 +47,7 @@ export function IdleGuard({ faolmi = true }: { faolmi?: boolean }) {
       for (const hodisa of hodisalar) window.removeEventListener(hodisa, qaytaBoshlash);
       if (taymerRef.current) clearTimeout(taymerRef.current);
     };
-  }, [pathname, router, faolmi]);
+  }, [pathname, router, faolmi, prezentatsiyaOchiq]);
 
   return null;
 }

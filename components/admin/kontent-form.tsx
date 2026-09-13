@@ -151,8 +151,8 @@ export function KontentForma({
           )}
           {turi === "prezentatsiya" && (
             <p className="text-xs text-muted-foreground">
-              To&apos;liq ekran slayd ko&apos;ruvchi keyingi bosqichda qo&apos;shiladi — hozircha PDF
-              to&apos;g&apos;ridan-to&apos;g&apos;ri ochiladi.
+              Talaba tomonida to&apos;liq ekran slayd ko&apos;ruvchida (barmoq bilan varaqlash, doska,
+              slaydlar to&apos;ri) ochiladi.
             </p>
           )}
         </div>

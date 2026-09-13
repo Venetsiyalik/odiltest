@@ -489,6 +489,49 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
     Dashboard esa istalgan darajani ko'rsatishi mumkin (masalan boshqa
     sinf o'quvchisi 7-sinf mavzusini ko'rayotgan bo'lishi mumkin) — bu
     ikki tizim orasidagi tabiiy chegara, ataylab shunday qoldirilgan.
-- Keyingi: **4-bosqich** — Prezentatsiya ko'ruvchi (PDF yuklash → slaydlarga
-  ajratish → smart ekran to'liq ekran rejimi, bosish zonalari, doska,
-  Wake Lock).
+- **4-bosqich (Prezentatsiya ko'ruvchi):** yakunlangan — brauzerda to'liq
+  sinovdan o'tkazildi (5 sahifali sinov PDF orqali): sahifalar to'g'ri
+  render bo'ldi, klaviatura bilan navigatsiya + oldindan yuklash ishladi,
+  slaydlar to'ri (grid) barcha kichik rasmlarni ko'rsatib, bosilganda
+  to'g'ri sahifaga o'tkazdi, doska chizish/tozalash ishladi, panel
+  avtomatik yashirinish/qaytish ishladi, chiqish tugmasi tozalikcha
+  yopdi, konsolda xato yo'q. Sinov uchun yuklangan PDF va yozuv keyin
+  tozalab tashlandi.
+  - **Muhim texnik qaror (REDIZAYN.md 4.2-band, "ko'p xato qilinadigan
+    joy"):** PDF **faqat klient tomonda** `pdfjs-dist` bilan
+    render qilinadi (`components/redizayn/prezentatsiya-korish.tsx`) —
+    serverda HECH QANDAY konvertatsiya (LibreOffice, ImageMagick va h.k.)
+    ishlatilmaydi, chunki bular Vercel serverless funksiyalarida
+    ishlamaydi. Bu aynan hujjatning o'zi "asosiy yo'l" deb atagan yechim.
+    Server tomonda PDF'ni oldindan WebP'ga aylantirish ("Optimizatsiya"
+    bandi) ataylab qilinmadi — hozircha zarurat yo'q, sahifalar
+    keshlanadi (`ImageBitmap`) va joriy sahifadan keyingi 2 tasi fonda
+    oldindan render qilinadi, shu yetarli tezlik beradi.
+  - `pdfjs-dist` yangi bog'liqlik sifatida qo'shildi; uning "worker"
+    fayli (`pdf.worker.min.mjs`) `public/pdf/`ga qo'lda nusxalangan
+    (statik fayl sifatida, bundler-bog'liq sozlashlardan qochish uchun).
+  - Ko'ruvchi og'ir bo'lgani uchun (`pdfjs-dist`) `next/dynamic(...,
+    {ssr:false})` orqali faqat "Prezentatsiyani boshlash" bosilganda
+    yuklanadi (`components/redizayn/prezentatsiya-ochuvchi.tsx`) — boshqa
+    material turlarini ko'rayotgan talabaning bundle hajmiga ta'sir
+    qilmaydi (build natijasida material sahifasi shared JS'dan atigi
+    ~2.6 kB ko'proq).
+  - Interfeys: chap/o'ng bosish zonalari (15%), barmoq bilan surish
+    (swipe), klaviatura (← → Space Esc F), pastki panel 3 soniyadan keyin
+    avtomatik yashiradi, `[⊞]` — barcha slaydlar to'ri, `[👁]` — doska
+    (qizil/ko'k/sariq qalam + tozalash, saqlanmaydi), `[⛶]` — brauzer
+    to'liq ekran rejimi (`requestFullscreen`), Wake Lock API (ekran
+    uxlab qolmasligi uchun).
+  - **Kiosk avto-chiqish o'chirilishi:** yangi yengil hodisa mexanizmi
+    (`lib/redizayn/prezentatsiya-holati.ts`) — ko'ruvchi ochilganda
+    `IdleGuard`ga "faol" signalini yuboradi, taymer to'xtaydi; yopilganda
+    taymer odatdagidek davom etadi. Bu `IdleGuard`ning pathname-asosli
+    eski mantig'iga qo'shimcha, uni buzmaydi.
+  - **Ataylab qilinmagan:** `.pptx` fayllarni CloudConvert (pullik
+    xizmat) orqali PDF'ga aylantirish — hujjatning o'zi buni "qulaylik"
+    (ixtiyoriy) deb belgilagan va agar API kaliti bo'lmasa foydalanuvchiga
+    shunchaki PDF so'rashni tavsiya qiladi — aynan shu standart xatti-
+    harakat, alohida ishlab chiqilmagan holda ham, tabiiy ravishda
+    ta'minlanadi (faqat PDF/tashqi havola qo'llab-quvvatlanadi).
+- Keyingi: **5-bosqich** — Gamifikatsiya (XP, daraja, kunlik seriya,
+  nishonlar, avatarlar, sinf reytingi).

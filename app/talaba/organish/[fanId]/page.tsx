@@ -5,6 +5,7 @@ import { mavzularProgressBilanOl } from "@/lib/talaba/organish";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { fanRangi } from "@/lib/redizayn/fan-rangi";
 import { theme } from "@/lib/theme";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 
 export default async function FanMavzulariPage({
@@ -23,7 +24,10 @@ export default async function FanMavzulariPage({
   const { data: fan } = await supabase.from("fanlar").select("nomi").eq("id", fanIdRaqami).maybeSingle();
   if (!fan) notFound();
 
-  const mavzular = await mavzularProgressBilanOl(fanIdRaqami, oquvchi.sinfId, oquvchi.id);
+  const [mavzular, matnlar] = await Promise.all([
+    mavzularProgressBilanOl(fanIdRaqami, oquvchi.sinfId, oquvchi.id),
+    joriyMatnlarniOlish(),
+  ]);
   const rang = fanRangi(fan.nomi);
 
   return (
@@ -43,13 +47,13 @@ export default async function FanMavzulariPage({
             {fan.nomi}
           </h1>
           <Link href="/organish" className="text-[18px] underline" style={{ color: theme.colors.muted }}>
-            Orqaga
+            {matnlar.umumiy.orqaga}
           </Link>
         </div>
 
         {mavzular.length === 0 && (
           <Karta className="py-8 text-center" style={{ color: theme.colors.muted }}>
-            Bu fan uchun hali mavzu yo&apos;q
+            {matnlar.talaba.sinf.fanYoq}
           </Karta>
         )}
 
@@ -67,7 +71,7 @@ export default async function FanMavzulariPage({
                   <span className="text-[20px] font-semibold">{mavzu.nomi}</span>
                 </div>
                 {mavzu.organildimi && (
-                  <span className="text-2xl" style={{ color: theme.colors.success }} aria-label="O'rganilgan">
+                  <span className="text-2xl" style={{ color: theme.colors.success }} aria-label={matnlar.talaba.sinf.organilganBelgi}>
                     ✓
                   </span>
                 )}

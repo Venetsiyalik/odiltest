@@ -4,7 +4,7 @@ import crypto from "node:crypto";
 import { z } from "zod";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { SESSIYA_COOKIE, SESSIYA_MUDDATI_SONIYA } from "@/lib/auth/student";
-import { uz } from "@/lib/i18n/uz";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 
 const MAX_XATO_URINISH = 5;
 const BLOK_DAQIQA = 10;
@@ -19,6 +19,7 @@ interface OquvchiQatori {
 }
 
 export async function POST(so_rov: Request) {
+  const matnlar = await joriyMatnlarniOlish();
   const tana = await so_rov.json().catch(() => null);
   const tekshiruv = kodSxemasi.safeParse(tana);
   if (!tekshiruv.success) {
@@ -42,7 +43,7 @@ export async function POST(so_rov: Request) {
 
   const xatoSoni = (songiUrinishlar ?? []).filter((u) => !u.muvaffaqiyatli).length;
   if (xatoSoni >= MAX_XATO_URINISH) {
-    return NextResponse.json({ xato: uz.talaba.kirish.judaKopUrinish }, { status: 429 });
+    return NextResponse.json({ xato: matnlar.talaba.kirish.judaKopUrinish }, { status: 429 });
   }
 
   const { data: oquvchi } = await supabase
@@ -57,7 +58,7 @@ export async function POST(so_rov: Request) {
   });
 
   if (!oquvchi || !oquvchi.faol) {
-    return NextResponse.json({ xato: uz.talaba.kirish.kodNotogri }, { status: 404 });
+    return NextResponse.json({ xato: matnlar.talaba.kirish.kodNotogri }, { status: 404 });
   }
 
   const token = crypto.randomBytes(32).toString("hex");

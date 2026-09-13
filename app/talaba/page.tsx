@@ -5,6 +5,7 @@ import { oquvchiHolatiniOl, sinfReytinginiOl } from "@/lib/redizayn/gamifikatsiy
 import { AVATARLAR } from "@/lib/redizayn/avatarlar-royxati";
 import { theme } from "@/lib/theme";
 import { saytUrliniOl } from "@/lib/utils/site-url";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Logo } from "@/components/ui/Logo";
 import { Karta } from "@/components/redizayn/karta";
 import { Sherbek } from "@/components/ui/Sherbek";
@@ -14,13 +15,15 @@ import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
 import { Qidiruv } from "@/components/redizayn/qidiruv";
 import { HavolaTugma } from "@/components/redizayn/tugma";
 import { TovushTugmasi } from "@/components/redizayn/tovush-tugmasi";
+import { TilTugmasi } from "@/components/student/til-tugmasi";
 
 export default async function DashboardSahifasi() {
-  const [oquvchi, darajalar, qidiruvIndeksi, sinfReytingi] = await Promise.all([
+  const [oquvchi, darajalar, qidiruvIndeksi, sinfReytingi, matnlar] = await Promise.all([
     joriyOquvchiniOl(),
     darajalarStatistikasiniOl(),
     qidiruvIndeksiniOl(),
     sinfReytinginiOl(),
+    joriyMatnlarniOlish(),
   ]);
 
   const holat = oquvchi ? await oquvchiHolatiniOl(oquvchi.id) : null;
@@ -71,31 +74,31 @@ export default async function DashboardSahifasi() {
                 <div>
                   <p className="text-[18px] font-bold">{oquvchi.ismFamiliya}</p>
                   <p className="text-sm" style={{ color: theme.colors.muted }}>
-                    {oquvchi.sinfNomi} sinf
+                    {matnlar.talaba.menyu.sinfLabel(oquvchi.sinfNomi)}
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
                 <Belgi rang={theme.colors.primary}>
-                  <Ikonka nom="kubok" size="sm" /> Daraja {holat.daraja}
+                  <Ikonka nom="kubok" size="sm" /> {matnlar.talaba.dashboard.daraja(holat.daraja)}
                 </Belgi>
                 <Belgi>
                   <Ikonka nom="yulduz" size="sm" /> {holat.jamiXp} XP
                 </Belgi>
                 <Belgi rang={theme.colors.success}>
-                  <Ikonka nom="olov" size="sm" /> {holat.seriya} kun
+                  <Ikonka nom="olov" size="sm" /> {matnlar.talaba.dashboard.kunSoni(holat.seriya)}
                   {holat.muzlatgich > 0 ? ` · ❄️×${holat.muzlatgich}` : ""}
                 </Belgi>
                 <HavolaTugma href="/menyu" rang="primary" hajm="kichik">
-                  Shaxsiy kabinet
+                  {matnlar.talaba.dashboard.shaxsiyKabinet}
                 </HavolaTugma>
               </div>
             </div>
 
             <div className="flex flex-col gap-1">
               <p className="text-sm" style={{ color: theme.colors.muted }}>
-                Bugungi maqsad: {holat.bugungiMaqsad.joriy}/{holat.bugungiMaqsad.maqsad} mashq savoli
+                {matnlar.talaba.dashboard.bugungiMaqsad(holat.bugungiMaqsad.joriy, holat.bugungiMaqsad.maqsad)}
                 {holat.bugungiMaqsad.bajarildimi ? " ✓" : ""}
               </p>
               <ProgressChizigi
@@ -112,18 +115,21 @@ export default async function DashboardSahifasi() {
             <div>
               <Logo size="md" withText priority />
               <p className="mt-1 text-[18px] sm:text-[20px]" style={{ color: theme.colors.muted }}>
-                Barcha fan va mavzular — hammaga ochiq, kodsiz
+                {matnlar.talaba.dashboard.tagline}
               </p>
             </div>
           </div>
-          <TovushTugmasi />
+          <div className="flex items-center gap-3">
+            <TilTugmasi />
+            <TovushTugmasi />
+          </div>
         </header>
 
         <Qidiruv indeks={qidiruvIndeksi} />
 
         <section className="flex flex-col gap-4">
           <h2 className="text-[28px] font-extrabold" style={{ color: theme.colors.primary }}>
-            Sinflar
+            {matnlar.talaba.dashboard.sinflar}
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
             {darajalar.map((d) => (
@@ -133,7 +139,9 @@ export default async function DashboardSahifasi() {
                     {d.daraja}
                   </p>
                   <p className="text-sm" style={{ color: theme.colors.muted }}>
-                    {d.mavjudmi ? `${d.fanSoni} fan · ${d.mavzuSoni} mavzu` : "Tez orada"}
+                    {d.mavjudmi
+                      ? matnlar.talaba.dashboard.fanVaMavzu(d.fanSoni, d.mavzuSoni)
+                      : matnlar.umumiy.tezOrada}
                   </p>
                 </Karta>
               </Link>
@@ -143,25 +151,25 @@ export default async function DashboardSahifasi() {
 
         <section className="flex flex-col gap-4">
           <h2 className="text-[28px] font-extrabold" style={{ color: theme.colors.primary }}>
-            Tez havolalar
+            {matnlar.talaba.dashboard.tezHavolalar}
           </h2>
           <div className="flex flex-wrap gap-4">
             <HavolaTugma href="/mashq" rang="accent">
-              ✏️ Mashq qilish
+              ✏️ {matnlar.talaba.menyu.mashq}
             </HavolaTugma>
             <HavolaTugma href="/kirish" rang="primary">
-              📝 Test topshirish (kod bilan)
+              📝 {matnlar.talaba.dashboard.testTopshirishKodBilan}
             </HavolaTugma>
           </div>
         </section>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <section className="flex flex-col gap-3">
-            <h2 className="text-[20px] font-bold">Sinflar reytingi (shu hafta)</h2>
+            <h2 className="text-[20px] font-bold">{matnlar.talaba.dashboard.sinflarReytingi}</h2>
             {sinfReytingi.length === 0 ? (
               <Karta className="flex flex-col items-center gap-2 py-8 text-center">
                 <Sherbek holat="maslahat" size="lg" />
-                <p style={{ color: theme.colors.muted }}>Bu hafta hali XP to&apos;plangani yo&apos;q</p>
+                <p style={{ color: theme.colors.muted }}>{matnlar.talaba.dashboard.xpYoq}</p>
               </Karta>
             ) : (
               <Karta className="flex flex-col gap-2">
@@ -177,12 +185,10 @@ export default async function DashboardSahifasi() {
             )}
           </section>
           <section className="flex flex-col gap-3">
-            <h2 className="text-[20px] font-bold">Oxirgi qo&apos;shilgan materiallar</h2>
+            <h2 className="text-[20px] font-bold">{matnlar.talaba.dashboard.oxirgiMateriallar}</h2>
             <Karta className="flex flex-col items-center gap-2 py-8 text-center">
               <Sherbek holat="kitob" size="lg" />
-              <p style={{ color: theme.colors.muted }}>
-                Tez orada — o&apos;quv materiallari moduli qo&apos;shilgach shu yerda ko&apos;rinadi
-              </p>
+              <p style={{ color: theme.colors.muted }}>{matnlar.talaba.dashboard.materiallarTezOrada}</p>
             </Karta>
           </section>
         </div>

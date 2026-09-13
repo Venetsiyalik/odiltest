@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { PDFDocumentProxy, PDFDocumentLoadingTask } from "pdfjs-dist";
 import { prezentatsiyaHolatiniElonQilish } from "@/lib/redizayn/prezentatsiya-holati";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import { theme } from "@/lib/theme";
 
 /**
@@ -38,6 +39,7 @@ export function PrezentatsiyaKorish({
   sarlavha: string;
   onChiqish: () => void;
 }) {
+  const { matnlar } = useMatnlar();
   const konteynerRef = useRef<HTMLDivElement>(null);
   const slaydCanvasRef = useRef<HTMLCanvasElement>(null);
   const doskaCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -147,7 +149,7 @@ export function PrezentatsiyaKorish({
         setJamiSahifa(hujjat.numPages);
         setYuklanmoqda(false);
       } catch {
-        if (!bekorQilindi) setXato("Prezentatsiyani yuklab bo'lmadi");
+        if (!bekorQilindi) setXato(matnlar.talaba.prezentatsiya.yuklabBolmadi);
       }
     }
 
@@ -156,7 +158,7 @@ export function PrezentatsiyaKorish({
       bekorQilindi = true;
       void yuklashVazifasi?.destroy();
     };
-  }, [faylUrl]);
+  }, [faylUrl, matnlar]);
 
   // Joriy sahifani chizish + keyingi 2 tasini fonda oldindan yuklash
   useEffect(() => {
@@ -328,7 +330,7 @@ export function PrezentatsiyaKorish({
       onTouchEnd={teginishTugadi}
     >
       <div className="relative flex flex-1 items-center justify-center overflow-hidden">
-        {yuklanmoqda && <p className="text-xl text-white">Yuklanmoqda...</p>}
+        {yuklanmoqda && <p className="text-xl text-white">{matnlar.umumiy.yuklanmoqda}</p>}
         {xato && <p className="text-xl text-white">{xato}</p>}
         <canvas ref={slaydCanvasRef} className="pointer-events-none" />
         <canvas
@@ -397,7 +399,7 @@ export function PrezentatsiyaKorish({
               onClick={() => setDoskaOchiq((v) => !v)}
               className="rounded-lg px-3 py-2 text-xl active:bg-white/20"
               style={{ color: doskaOchiq ? theme.colors.accent : "white" }}
-              aria-label="Doska"
+              aria-label={matnlar.talaba.prezentatsiya.doska}
             >
               👁
             </button>
@@ -427,10 +429,11 @@ function SlaydlarPaneli({
   tanlash: (raqam: number) => void;
   yopish: () => void;
 }) {
+  const { matnlar } = useMatnlar();
   return (
     <div className="absolute inset-0 z-10 flex flex-col bg-black/95 p-4" onClick={(h) => h.stopPropagation()}>
       <div className="flex items-center justify-between pb-3">
-        <p className="text-lg font-semibold text-white">Barcha slaydlar</p>
+        <p className="text-lg font-semibold text-white">{matnlar.talaba.prezentatsiya.barchaSlaydlar}</p>
         <button type="button" onClick={yopish} className="rounded-lg px-3 py-2 text-xl text-white active:bg-white/20">
           ✕
         </button>

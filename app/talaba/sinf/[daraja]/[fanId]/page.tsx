@@ -4,6 +4,7 @@ import { darajaHaqiqiymi } from "@/lib/redizayn/daraja";
 import { fanSahifasiniOl, type FanMavzusi } from "@/lib/redizayn/dashboard";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { theme } from "@/lib/theme";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
 import { FanIkonka } from "@/components/ui/FanIkonka";
@@ -41,7 +42,10 @@ export default async function FanSahifasi({
   }
 
   const oquvchi = await joriyOquvchiniOl();
-  const { fanNomi, mavzular } = await fanSahifasiniOl(darajaRaqami, fanIdRaqami, oquvchi?.id);
+  const [{ fanNomi, mavzular }, matnlar] = await Promise.all([
+    fanSahifasiniOl(darajaRaqami, fanIdRaqami, oquvchi?.id),
+    joriyMatnlarniOlish(),
+  ]);
   if (!fanNomi) notFound();
 
   const organilganSoni = mavzular.filter((m) => m.organildimi).length;
@@ -64,7 +68,7 @@ export default async function FanSahifasi({
             <FanIkonka fan={fanNomi} size="lg" priority />
             <div>
               <p className="text-sm" style={{ color: theme.colors.muted }}>
-                {darajaRaqami}-sinf
+                {matnlar.talaba.sinf.darajaSarlavha(darajaRaqami)}
               </p>
               <h1 className="text-[36px] font-extrabold sm:text-[48px]" style={{ color: theme.colors.primary }}>
                 {fanNomi}
@@ -72,14 +76,14 @@ export default async function FanSahifasi({
             </div>
           </div>
           <Link href={`/sinf/${darajaRaqami}`} className="text-[18px] underline" style={{ color: theme.colors.muted }}>
-            Orqaga
+            {matnlar.umumiy.orqaga}
           </Link>
         </div>
 
         {oquvchi && mavzular.length > 0 && (
           <div className="flex flex-col gap-2">
             <p className="text-sm" style={{ color: theme.colors.muted }}>
-              {mavzular.length} mavzudan {organilganSoni} tasi o&apos;rganilgan
+              {matnlar.talaba.sinf.mavzuOrganilgan(organilganSoni, mavzular.length)}
             </p>
             <ProgressChizigi foiz={(organilganSoni / mavzular.length) * 100} />
           </div>
@@ -87,7 +91,7 @@ export default async function FanSahifasi({
 
         {mavzular.length === 0 ? (
           <Karta className="py-8 text-center" style={{ color: theme.colors.muted }}>
-            Bu fan uchun hali mavzu qo&apos;shilmagan
+            {matnlar.talaba.sinf.mavzuYoq}
           </Karta>
         ) : (
           <div className="flex flex-col gap-6">
@@ -118,7 +122,11 @@ export default async function FanSahifasi({
                         </div>
                       </div>
                       {mavzu.organildimi && (
-                        <span className="text-2xl" style={{ color: theme.colors.success }} aria-label="O'rganilgan">
+                        <span
+                          className="text-2xl"
+                          style={{ color: theme.colors.success }}
+                          aria-label={matnlar.talaba.sinf.organilganBelgi}
+                        >
                           ✓
                         </span>
                       )}

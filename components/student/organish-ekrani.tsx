@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import { youtubeEmbedUrl } from "@/lib/utils/youtube";
 import { KontentKorinish } from "@/components/kontent-korinish";
 import type { MavzuDetali } from "@/lib/talaba/organish";
@@ -28,6 +28,7 @@ type Bosqich = "nazariya" | "misol" | "tekshirish" | "yakun";
 
 export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: MavzuDetali }) {
   const router = useRouter();
+  const { matnlar } = useMatnlar();
   const nazariyaMateriallari = useMemo(
     () => detali.materiallar.filter((m) => m.turi === "nazariya"),
     [detali.materiallar],
@@ -147,7 +148,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
           {joriyBosqich === "nazariya" && (
             <>
               <h1 className="text-[28px] font-extrabold sm:text-[32px]" style={{ color: theme.colors.primary }}>
-                {uz.talaba.organish.nazariya}
+                {matnlar.talaba.organish.nazariya}
               </h1>
               <div className="flex flex-col gap-6">
                 {nazariyaMateriallari.map((material) => (
@@ -160,7 +161,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
           {joriyBosqich === "misol" && (
             <>
               <h1 className="text-[28px] font-extrabold sm:text-[32px]" style={{ color: theme.colors.primary }}>
-                {uz.talaba.organish.misol}
+                {matnlar.talaba.organish.misol}
               </h1>
               <div className="flex flex-col gap-6">
                 {misolMateriallari.map((material) => (
@@ -173,7 +174,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
           {joriyBosqich === "tekshirish" && joriySavol && (
             <>
               <h1 className="text-[28px] font-extrabold sm:text-[32px]" style={{ color: theme.colors.primary }}>
-                {uz.talaba.organish.oziniTekshirish} ({savolIndeksi + 1}/
+                {matnlar.talaba.organish.oziniTekshirish} ({savolIndeksi + 1}/
                 {detali.ozOziniTekshirishSavollari.length})
               </h1>
               <p className="text-[22px] font-semibold sm:text-[26px]">{joriySavol.matn}</p>
@@ -193,10 +194,10 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
                     className="text-[20px] font-bold"
                     style={{ color: natija.togriMi ? theme.colors.success : theme.colors.danger }}
                   >
-                    {natija.togriMi ? uz.talaba.organish.togri : uz.talaba.organish.notogri}
+                    {natija.togriMi ? matnlar.talaba.organish.togri : matnlar.talaba.organish.notogri}
                   </p>
                   {!natija.togriMi && (
-                    <p className="text-[18px]">{uz.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
+                    <p className="text-[18px]">{matnlar.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
                   )}
                   {natija.izoh && (
                     <p className="text-[16px]" style={{ color: theme.colors.muted }}>
@@ -204,7 +205,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
                     </p>
                   )}
                   <Tugma onClick={keyingiSavolgaOtish} rang="primary">
-                    {uz.umumiy.keyingi}
+                    {matnlar.umumiy.keyingi}
                   </Tugma>
                 </Karta>
               )}
@@ -215,15 +216,15 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
             <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
               <Sherbek holat="zor" size="lg" />
               <p className="text-[28px] font-extrabold" style={{ color: theme.colors.primary }}>
-                {uz.talaba.organish.mavzuOrganildi}
+                {matnlar.talaba.organish.mavzuOrganildi}
               </p>
               {detali.ozOziniTekshirishSavollari.length > 0 && (
                 <p className="text-[20px]" style={{ color: theme.colors.muted }}>
-                  {uz.talaba.mashq.hisob(togriSoni, detali.ozOziniTekshirishSavollari.length)}
+                  {matnlar.talaba.mashq.hisob(togriSoni, detali.ozOziniTekshirishSavollari.length)}
                 </p>
               )}
               <Tugma onClick={yakunlashniBajarish} disabled={yakunlanmoqda} rang="accent">
-                {yakunlanmoqda ? uz.umumiy.yuklanmoqda : uz.umumiy.davomEtish}
+                {yakunlanmoqda ? matnlar.umumiy.yuklanmoqda : matnlar.umumiy.davomEtish}
               </Tugma>
             </div>
           )}
@@ -232,7 +233,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
         {(joriyBosqich === "nazariya" || joriyBosqich === "misol") && (
           <footer className="pt-4">
             <Tugma onClick={keyingiBosqichgaOtish} rang="accent" className="w-full sm:w-auto">
-              {uz.umumiy.keyingi}
+              {matnlar.umumiy.keyingi}
             </Tugma>
           </footer>
         )}

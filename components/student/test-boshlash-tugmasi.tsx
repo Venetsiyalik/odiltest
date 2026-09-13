@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import { theme } from "@/lib/theme";
 import { Tugma } from "@/components/redizayn/tugma";
 
 export function TestBoshlashTugmasi({ testId }: { testId: number }) {
   const router = useRouter();
+  const { matnlar } = useMatnlar();
   const [yuklanmoqda, setYuklanmoqda] = useState(false);
   const [xato, setXato] = useState<string | null>(null);
 
@@ -22,13 +23,13 @@ export function TestBoshlashTugmasi({ testId }: { testId: number }) {
       });
       const natija = await javob.json();
       if (!javob.ok) {
-        setXato(natija.xato ?? uz.umumiy.xatoYuzBerdi);
+        setXato(natija.xato ?? matnlar.umumiy.xatoYuzBerdi);
         setYuklanmoqda(false);
         return;
       }
       router.push(`/urinish/${natija.urinishId}`);
     } catch {
-      setXato(uz.umumiy.xatoYuzBerdi);
+      setXato(matnlar.umumiy.xatoYuzBerdi);
       setYuklanmoqda(false);
     }
   }
@@ -41,7 +42,7 @@ export function TestBoshlashTugmasi({ testId }: { testId: number }) {
         </p>
       )}
       <Tugma onClick={boshlash} disabled={yuklanmoqda} rang="primary" className="w-full">
-        {yuklanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.test.boshlash}
+        {yuklanmoqda ? matnlar.umumiy.yuklanmoqda : matnlar.talaba.test.boshlash}
       </Tugma>
     </div>
   );

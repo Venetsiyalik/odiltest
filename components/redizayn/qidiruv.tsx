@@ -3,10 +3,12 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { theme } from "@/lib/theme";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import type { QidiruvElementi } from "@/lib/redizayn/dashboard";
 
 export function Qidiruv({ indeks }: { indeks: QidiruvElementi[] }) {
   const router = useRouter();
+  const { matnlar } = useMatnlar();
   const [matn, setMatn] = useState("");
 
   const natijalar = useMemo(() => {
@@ -30,7 +32,7 @@ export function Qidiruv({ indeks }: { indeks: QidiruvElementi[] }) {
         type="text"
         value={matn}
         onChange={(e) => setMatn(e.target.value)}
-        placeholder="Mavzu yoki fan qidiring…"
+        placeholder={matnlar.talaba.qidiruv.placeholder}
         className="w-full border-2 px-5 py-3 text-[18px] outline-none"
         style={{
           borderRadius: theme.radius.md,
@@ -52,7 +54,8 @@ export function Qidiruv({ indeks }: { indeks: QidiruvElementi[] }) {
               >
                 <span>{elementi.nomi}</span>
                 <span style={{ color: theme.colors.muted }} className="text-sm">
-                  {elementi.daraja}-sinf{elementi.turi === "mavzu" ? " · mavzu" : ""}
+                  {matnlar.talaba.sinf.darajaSarlavha(elementi.daraja)}
+                  {elementi.turi === "mavzu" ? matnlar.talaba.qidiruv.mavzuBelgisi : ""}
                 </span>
               </button>
             </li>

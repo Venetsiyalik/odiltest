@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Image from "next/image";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import type { Variant } from "@/lib/talaba/aralashtirish";
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
@@ -30,6 +30,7 @@ export function MashqEkrani({
   sessiyaId: number;
   toxtatish: () => void;
 }) {
+  const { matnlar } = useMatnlar();
   const [savol, setSavol] = useState<MashqSavoli | null>(null);
   const [korilganlar, setKorilganlar] = useState<number[]>([]);
   const [faqatIdlar, setFaqatIdlar] = useState<number[] | null>(null);
@@ -146,20 +147,20 @@ export function MashqEkrani({
     >
       <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 sm:p-8">
         <header className="flex items-center justify-between">
-          <Belgi>{uz.talaba.mashq.hisob(togriSoni, jamiSoni)}</Belgi>
+          <Belgi>{matnlar.talaba.mashq.hisob(togriSoni, jamiSoni)}</Belgi>
           <button
             type="button"
             onClick={sessiyaniYakunlash}
             className="min-h-16 px-6 text-[18px] font-bold"
             style={{ borderRadius: theme.radius.md, border: `2px solid ${theme.colors.muted}44` }}
           >
-            {uz.talaba.mashq.toxtatish}
+            {matnlar.talaba.mashq.toxtatish}
           </button>
         </header>
 
         {yuklanmoqda && (
           <p className="text-[20px]" style={{ color: theme.colors.muted }}>
-            {uz.umumiy.yuklanmoqda}
+            {matnlar.umumiy.yuklanmoqda}
           </p>
         )}
 
@@ -167,18 +168,18 @@ export function MashqEkrani({
           <div className="flex flex-1 flex-col items-center justify-center gap-6 text-center">
             <Sherbek holat={togriSoni >= jamiSoni / 2 ? "zor" : "maslahat"} size="lg" />
             <p className="text-[28px] font-extrabold" style={{ color: theme.colors.primary }}>
-              {uz.talaba.mashq.sessiyaYakunlandi}
+              {matnlar.talaba.mashq.sessiyaYakunlandi}
             </p>
             <p className="text-[20px]" style={{ color: theme.colors.muted }}>
-              {uz.talaba.mashq.hisob(togriSoni, jamiSoni)}
+              {matnlar.talaba.mashq.hisob(togriSoni, jamiSoni)}
             </p>
             {xatoQilinganlar.size > 0 && (
               <Tugma onClick={xatolarniQaytaIshlash} rang="outline">
-                {uz.talaba.mashq.xatolarniQaytarish} ({xatoQilinganlar.size})
+                {matnlar.talaba.mashq.xatolarniQaytarish} ({xatoQilinganlar.size})
               </Tugma>
             )}
             <Tugma onClick={sessiyaniYakunlash} rang="accent">
-              {uz.talaba.test.menyugaQaytish}
+              {matnlar.talaba.test.menyugaQaytish}
             </Tugma>
           </div>
         )}
@@ -215,10 +216,10 @@ export function MashqEkrani({
                   className="text-[20px] font-bold"
                   style={{ color: natija.togriMi ? theme.colors.success : theme.colors.danger }}
                 >
-                  {natija.togriMi ? uz.talaba.organish.togri : uz.talaba.organish.notogri}
+                  {natija.togriMi ? matnlar.talaba.organish.togri : matnlar.talaba.organish.notogri}
                 </p>
                 {!natija.togriMi && (
-                  <p className="text-[18px]">{uz.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
+                  <p className="text-[18px]">{matnlar.talaba.organish.togriJavobEdi(natija.togriJavob)}</p>
                 )}
                 {natija.izoh && (
                   <p className="text-[16px]" style={{ color: theme.colors.muted }}>
@@ -226,7 +227,7 @@ export function MashqEkrani({
                   </p>
                 )}
                 <Tugma onClick={keyingiSavol} rang="primary">
-                  {uz.talaba.mashq.keyingiSavol}
+                  {matnlar.talaba.mashq.keyingiSavol}
                 </Tugma>
               </Karta>
             )}

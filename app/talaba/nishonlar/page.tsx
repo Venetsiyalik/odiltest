@@ -3,6 +3,7 @@ import Link from "next/link";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { oquvchiHolatiniOl, oquvchiNishonlariniOl } from "@/lib/redizayn/gamifikatsiya";
 import { theme } from "@/lib/theme";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 import { AvatarTanlagich } from "@/components/redizayn/avatar-tanlagich";
 import { Ikonka } from "@/components/ui/Ikonka";
@@ -11,9 +12,10 @@ export default async function NishonlarSahifasi() {
   const oquvchi = await joriyOquvchiniOl();
   if (!oquvchi) redirect("/kirish");
 
-  const [holat, nishonlar] = await Promise.all([
+  const [holat, nishonlar, matnlar] = await Promise.all([
     oquvchiHolatiniOl(oquvchi.id),
     oquvchiNishonlariniOl(oquvchi.id),
+    joriyMatnlarniOlish(),
   ]);
 
   return (
@@ -31,15 +33,15 @@ export default async function NishonlarSahifasi() {
         <div className="flex items-center justify-between">
           <h1 className="flex items-center gap-3 text-[36px] font-extrabold" style={{ color: theme.colors.primary }}>
             <Ikonka nom="medal" size="lg" priority />
-            Nishonlarim
+            {matnlar.talaba.nishonlar.sarlavha}
           </h1>
           <Link href="/menyu" className="text-[16px] underline" style={{ color: theme.colors.muted }}>
-            Orqaga
+            {matnlar.umumiy.orqaga}
           </Link>
         </div>
 
         <section className="flex flex-col gap-3">
-          <h2 className="text-[20px] font-bold">Avatar</h2>
+          <h2 className="text-[20px] font-bold">{matnlar.talaba.nishonlar.avatar}</h2>
           <Karta>
             <AvatarTanlagich joriyAvatar={holat.avatar} jamiXp={holat.jamiXp} />
           </Karta>
@@ -47,7 +49,7 @@ export default async function NishonlarSahifasi() {
 
         <section className="flex flex-col gap-3">
           <h2 className="text-[20px] font-bold">
-            Nishonlar ({nishonlar.filter((n) => n.olinganmi).length}/{nishonlar.length})
+            {matnlar.talaba.nishonlar.soni(nishonlar.filter((n) => n.olinganmi).length, nishonlar.length)}
           </h2>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
             {nishonlar.map((nishon) => (

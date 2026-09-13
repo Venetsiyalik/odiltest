@@ -4,7 +4,7 @@ import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { fanlarProgressBilanOl } from "@/lib/talaba/organish";
 import { fanRangi } from "@/lib/redizayn/fan-rangi";
 import { theme } from "@/lib/theme";
-import { uz } from "@/lib/i18n/uz";
+import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
 import { Karta } from "@/components/redizayn/karta";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
 import { Sherbek } from "@/components/ui/Sherbek";
@@ -13,7 +13,10 @@ export default async function OrganishPage() {
   const oquvchi = await joriyOquvchiniOl();
   if (!oquvchi) redirect("/kirish");
 
-  const fanlar = await fanlarProgressBilanOl(oquvchi.sinfId, oquvchi.id);
+  const [fanlar, matnlar] = await Promise.all([
+    fanlarProgressBilanOl(oquvchi.sinfId, oquvchi.id),
+    joriyMatnlarniOlish(),
+  ]);
 
   return (
     <main
@@ -29,17 +32,17 @@ export default async function OrganishPage() {
       <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-6 p-6 sm:p-8">
         <div className="flex items-center justify-between">
           <h1 className="text-[36px] font-extrabold" style={{ color: theme.colors.primary }}>
-            {uz.talaba.menyu.organish}
+            {matnlar.talaba.menyu.organish}
           </h1>
           <Link href="/menyu" className="text-[18px] underline" style={{ color: theme.colors.muted }}>
-            {uz.umumiy.orqaga}
+            {matnlar.umumiy.orqaga}
           </Link>
         </div>
 
         {fanlar.length === 0 && (
           <Karta className="flex flex-col items-center gap-3 py-10 text-center">
             <Sherbek holat="maslahat" size="lg" />
-            <p style={{ color: theme.colors.muted }}>Hozircha fan mavjud emas</p>
+            <p style={{ color: theme.colors.muted }}>{matnlar.talaba.sinf.fanMavjudEmas}</p>
           </Karta>
         )}
 
@@ -52,7 +55,7 @@ export default async function OrganishPage() {
                 <Karta bosiladigan rangChizigi={rang} className="flex flex-col gap-3">
                   <span className="text-[24px] font-bold">{fan.fanNomi}</span>
                   <span className="text-[18px]" style={{ color: theme.colors.muted }}>
-                    {fan.jamiMavzu} mavzudan {fan.organilganMavzu} tasi o&apos;rganildi
+                    {matnlar.talaba.sinf.mavzuOrganilgan(fan.organilganMavzu, fan.jamiMavzu)}
                   </span>
                   <ProgressChizigi foiz={foiz} rang={rang} />
                 </Karta>

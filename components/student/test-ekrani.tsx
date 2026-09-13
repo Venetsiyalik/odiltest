@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { uz } from "@/lib/i18n/uz";
+import { useMatnlar } from "@/components/student/matnlar-provideri";
 import type { UrinishDetali } from "@/lib/talaba/urinish-detali";
 import type { Variant } from "@/lib/talaba/aralashtirish";
 import { navbatgaQoshish, navbatniJonatish } from "@/lib/talaba/offline-navob";
@@ -40,6 +40,7 @@ function vaqtniFormatlash(soniya: number): string {
 
 export function TestEkrani({ detali }: { detali: UrinishDetali }) {
   const router = useRouter();
+  const { matnlar } = useMatnlar();
   const [savollar, setSavollar] = useState(detali.savollar);
   const [joriyIndeks, setJoriyIndeks] = useState(0);
   const [yakunlashOchiq, setYakunlashOchiq] = useState(false);
@@ -184,12 +185,12 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
               className="p-3 text-center text-[18px] font-semibold"
               style={{ background: `${theme.colors.warning}22`, color: theme.colors.warning, borderRadius: theme.radius.md }}
             >
-              {uz.talaba.test.oflaynXabari}
+              {matnlar.talaba.test.oflaynXabari}
             </div>
           )}
           <div className="flex items-center justify-between">
             <span className="text-[20px] font-bold sm:text-[24px]" style={{ color: theme.colors.primary }}>
-              {uz.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
+              {matnlar.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
             </span>
             <span className="flex items-center gap-2">
               {/* 5.6-band: rasmiy testda Sherbek ishlatilmaydi — faqat shu
@@ -260,7 +261,7 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
               onClick={() => setJoriyIndeks((i) => Math.max(0, i - 1))}
               disabled={joriyIndeks === 0}
             >
-              {uz.umumiy.orqaga}
+              {matnlar.umumiy.orqaga}
             </Tugma>
             <button
               type="button"
@@ -273,7 +274,7 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
                 color: joriySavol.belgilangan ? theme.colors.warning : theme.colors.text,
               }}
             >
-              ◆ {uz.talaba.test.belgilash}
+              ◆ {matnlar.talaba.test.belgilash}
             </button>
             <Tugma
               rang="outline"
@@ -281,25 +282,25 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
               onClick={() => setJoriyIndeks((i) => Math.min(savollar.length - 1, i + 1))}
               disabled={joriyIndeks === savollar.length - 1}
             >
-              {uz.umumiy.keyingi}
+              {matnlar.umumiy.keyingi}
             </Tugma>
           </div>
 
           <Tugma rang="primary" onClick={() => setYakunlashOchiq(true)}>
-            {uz.talaba.test.yakunlash} ({javobBerilganSoni}/{savollar.length})
+            {matnlar.talaba.test.yakunlash} ({javobBerilganSoni}/{savollar.length})
           </Tugma>
         </footer>
 
         {yakunlashOchiq && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
             <Karta className="flex max-w-md flex-col gap-6 text-center">
-              <p className="text-[20px] font-semibold">{uz.talaba.test.yakunlashTasdiq}</p>
+              <p className="text-[20px] font-semibold">{matnlar.talaba.test.yakunlashTasdiq}</p>
               <div className="flex flex-col gap-3">
                 <Tugma rang="primary" onClick={() => void yakunlashniBajarish()} disabled={yakunlanmoqda}>
-                  {yakunlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.test.yakunlash}
+                  {yakunlanmoqda ? matnlar.umumiy.yuklanmoqda : matnlar.talaba.test.yakunlash}
                 </Tugma>
                 <Tugma rang="outline" onClick={() => setYakunlashOchiq(false)} disabled={yakunlanmoqda}>
-                  {uz.umumiy.orqaga}
+                  {matnlar.umumiy.orqaga}
                 </Tugma>
               </div>
             </Karta>

@@ -18,6 +18,9 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Statik fayllar — masalan pdf.js worker (public/pdf/) — bular
+      // yozilmagan, tashqi/kutubxona kodi, lint qilinmasligi kerak.
+      "public/**",
     ],
   },
 ];

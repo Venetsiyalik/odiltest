@@ -17,7 +17,11 @@ export function Qidiruv({ indeks }: { indeks: QidiruvElementi[] }) {
 
   function tanlash(elementi: QidiruvElementi) {
     setMatn("");
-    router.push(elementi.turi === "fan" ? `/sinf/${elementi.daraja}/${elementi.fanId}` : `/sinf/${elementi.daraja}/${elementi.fanId}`);
+    router.push(
+      elementi.turi === "mavzu"
+        ? `/sinf/${elementi.daraja}/${elementi.fanId}/${elementi.mavzuId}`
+        : `/sinf/${elementi.daraja}/${elementi.fanId}`,
+    );
   }
 
   return (

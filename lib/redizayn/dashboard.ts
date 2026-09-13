@@ -20,13 +20,14 @@ interface MavzuQatori {
   fan_id: number;
   sinf_id: number;
   tartib: number;
+  bolim: string | null;
 }
 
 async function barchaSinflarVaMavzularniOl() {
   const supabase = createServiceRoleClient();
   const [{ data: sinflar }, { data: mavzular }] = await Promise.all([
     supabase.from("sinflar").select("id, nomi").returns<SinfQatori[]>(),
-    supabase.from("mavzular").select("id, nomi, fan_id, sinf_id, tartib").returns<MavzuQatori[]>(),
+    supabase.from("mavzular").select("id, nomi, fan_id, sinf_id, tartib, bolim").returns<MavzuQatori[]>(),
   ]);
   return { sinflar: sinflar ?? [], mavzular: mavzular ?? [] };
 }
@@ -88,7 +89,9 @@ export interface FanMavzusi {
   mavzuId: number;
   nomi: string;
   tartib: number;
+  bolim: string | null;
   organildimi: boolean;
+  materialTurlari: string[];
 }
 
 export async function fanSahifasiniOl(
@@ -107,22 +110,43 @@ export async function fanSahifasiniOl(
   const { data: fan } = await supabase.from("fanlar").select("nomi").eq("id", fanId).maybeSingle();
 
   let organilganIdlar = new Set<number>();
-  if (oquvchiId && shuFanMavzulari.length > 0) {
-    const { data: progressQatorlari } = await supabase
-      .from("progress")
-      .select("mavzu_id, organildi")
-      .eq("oquvchi_id", oquvchiId)
-      .in(
-        "mavzu_id",
-        shuFanMavzulari.map((m) => m.id),
-      );
-    organilganIdlar = new Set((progressQatorlari ?? []).filter((p) => p.organildi).map((p) => p.mavzu_id));
+  const materialTurlariXaritasi = new Map<number, Set<string>>();
+
+  if (shuFanMavzulari.length > 0) {
+    const mavzuIdlari = shuFanMavzulari.map((m) => m.id);
+
+    const { data: materiallar } = await supabase.from("materiallar").select("mavzu_id, turi").in("mavzu_id", mavzuIdlari);
+    for (const m of materiallar ?? []) {
+      const mavjud = materialTurlariXaritasi.get(m.mavzu_id) ?? new Set<string>();
+      mavjud.add(m.turi);
+      materialTurlariXaritasi.set(m.mavzu_id, mavjud);
+    }
+
+    if (oquvchiId) {
+      const { data: progressQatorlari } = await supabase
+        .from("progress")
+        .select("mavzu_id, organildi")
+        .eq("oquvchi_id", oquvchiId)
+        .in("mavzu_id", mavzuIdlari);
+      organilganIdlar = new Set((progressQatorlari ?? []).filter((p) => p.organildi).map((p) => p.mavzu_id));
+    }
   }
+
+  // REDIZAYN.md 3.2-band tartibi: [bolim, tartib] bo'yicha ("bo'sh" bolim
+  // oxirida qoladi — hali bolimlanmagan eski mavzular uchun).
+  const bolimTartiblangan = [...shuFanMavzulari].sort((a, b) => {
+    const bolimA = a.bolim ?? "";
+    const bolimB = b.bolim ?? "";
+    if (bolimA !== bolimB) return bolimA.localeCompare(bolimB);
+    return a.tartib - b.tartib;
+  });
 
   return {
     fanNomi: fan?.nomi ?? null,
-    mavzular: shuFanMavzulari.map((m) => ({
+    mavzular: bolimTartiblangan.map((m) => ({
       mavzuId: m.id,
+      bolim: m.bolim ?? null,
+      materialTurlari: Array.from(materialTurlariXaritasi.get(m.id) ?? []),
       nomi: m.nomi,
       tartib: m.tartib,
       organildimi: organilganIdlar.has(m.id),

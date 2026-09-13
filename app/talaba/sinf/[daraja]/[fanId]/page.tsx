@@ -1,11 +1,31 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { darajaHaqiqiymi } from "@/lib/redizayn/daraja";
-import { fanSahifasiniOl } from "@/lib/redizayn/dashboard";
+import { fanSahifasiniOl, type FanMavzusi } from "@/lib/redizayn/dashboard";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
+
+const TURI_IKONKASI: Record<string, string> = {
+  maruza: "📄",
+  prezentatsiya: "📊",
+  video: "🎬",
+  fayl: "📎",
+};
+
+function bolimlarGaGuruhlash(mavzular: FanMavzusi[]): { bolim: string | null; mavzular: FanMavzusi[] }[] {
+  const guruhlar: { bolim: string | null; mavzular: FanMavzusi[] }[] = [];
+  for (const mavzu of mavzular) {
+    const oxirgi = guruhlar[guruhlar.length - 1];
+    if (oxirgi && oxirgi.bolim === mavzu.bolim) {
+      oxirgi.mavzular.push(mavzu);
+    } else {
+      guruhlar.push({ bolim: mavzu.bolim, mavzular: [mavzu] });
+    }
+  }
+  return guruhlar;
+}
 
 export default async function FanSahifasi({
   params,
@@ -24,6 +44,7 @@ export default async function FanSahifasi({
   if (!fanNomi) notFound();
 
   const organilganSoni = mavzular.filter((m) => m.organildimi).length;
+  const guruhlar = bolimlarGaGuruhlash(mavzular);
 
   return (
     <main
@@ -65,28 +86,43 @@ export default async function FanSahifasi({
             Bu fan uchun hali mavzu qo&apos;shilmagan
           </Karta>
         ) : (
-          <div className="flex flex-col gap-3">
-            {mavzular.map((mavzu, indeks) => (
-              <Karta key={mavzu.mavzuId} className="flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
-                    style={{ background: theme.colors.primary }}
-                  >
-                    {indeks + 1}
-                  </span>
-                  <p className="text-[18px] font-semibold">{mavzu.nomi}</p>
-                </div>
-                {mavzu.organildimi && (
-                  <span className="text-2xl" style={{ color: theme.colors.success }} aria-label="O'rganilgan">
-                    ✓
-                  </span>
+          <div className="flex flex-col gap-6">
+            {guruhlar.map((guruh, guruhIndeksi) => (
+              <div key={guruh.bolim ?? `guruhsiz-${guruhIndeksi}`} className="flex flex-col gap-3">
+                {guruh.bolim && (
+                  <h2 className="text-[20px] font-bold" style={{ color: theme.colors.primary }}>
+                    {guruh.bolim}
+                  </h2>
                 )}
-              </Karta>
+                {guruh.mavzular.map((mavzu, indeks) => (
+                  <Link key={mavzu.mavzuId} href={`/sinf/${darajaRaqami}/${fanIdRaqami}/${mavzu.mavzuId}`}>
+                    <Karta bosiladigan className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <span
+                          className="flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white"
+                          style={{ background: theme.colors.primary }}
+                        >
+                          {indeks + 1}
+                        </span>
+                        <div>
+                          <p className="text-[18px] font-semibold">{mavzu.nomi}</p>
+                          {mavzu.materialTurlari.length > 0 && (
+                            <p className="text-sm">
+                              {mavzu.materialTurlari.map((turi) => TURI_IKONKASI[turi] ?? "").join(" ")}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      {mavzu.organildimi && (
+                        <span className="text-2xl" style={{ color: theme.colors.success }} aria-label="O'rganilgan">
+                          ✓
+                        </span>
+                      )}
+                    </Karta>
+                  </Link>
+                ))}
+              </div>
             ))}
-            <p className="text-sm" style={{ color: theme.colors.muted }}>
-              Mavzu sahifasi (ma&apos;ruza, prezentatsiya, video) keyingi bosqichda qo&apos;shiladi.
-            </p>
           </div>
         )}
       </div>

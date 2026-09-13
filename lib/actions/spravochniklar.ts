@@ -123,6 +123,9 @@ export interface Mavzu {
   tartib: number;
   fan_id: number;
   sinf_id: number;
+  // REDIZAYN.md 3-bosqich: yangi, ixtiyoriy ustunlar (0005-migratsiya).
+  bolim: string | null;
+  tavsif: string | null;
   fanlar: { nomi: string } | null;
   sinflar: { nomi: string } | null;
 }
@@ -131,7 +134,7 @@ export async function mavzularniOl(): Promise<Mavzu[]> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("mavzular")
-    .select("id, nomi, tartib, fan_id, sinf_id, fanlar(nomi), sinflar(nomi)")
+    .select("id, nomi, tartib, fan_id, sinf_id, bolim, tavsif, fanlar(nomi), sinflar(nomi)")
     .order("tartib");
   if (error) throw new Error(error.message);
   return (data ?? []) as unknown as Mavzu[];

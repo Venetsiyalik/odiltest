@@ -39,6 +39,19 @@ export async function testlarniOl(): Promise<Test[]> {
   return (data ?? []) as unknown as Test[];
 }
 
+export async function testniOl(id: number): Promise<Test | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("testlar")
+    .select(
+      "id, nomi, fan_id, sinf_id, savol_soni, vaqt_daqiqa, ochilish_vaqti, yopilish_vaqti, urinishlar_soni, tanlov_turi, aralashtirish, natija_korsat, xatolarni_korsat, holati, fanlar(nomi), sinflar(nomi)",
+    )
+    .eq("id", id)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data as unknown as Test | null;
+}
+
 export async function testMavzuIdlariniOl(testId: number): Promise<number[]> {
   const supabase = await createClient();
   const { data, error } = await supabase

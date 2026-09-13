@@ -33,7 +33,9 @@ manzillarini hosts faylisiz `127.0.0.1`ga yo'naltiradi.
 fayllari) ham avtomatik aniqlab, rewrite qilmay o'tkazib yuboradi — bu
 oxirgi segmentda nuqta borligiga (`/\.[a-zA-Z0-9]+$/`) qarab aniqlanadi.
 Yangi statik marshrut qo'shsangiz, bu qoida uni allaqachon qamrab oladi;
-alohida istisno qo'shish shart emas.
+alohida istisno qo'shish shart emas. Istisno: `/icons/*` (PWA manifest
+ikonkalari, `app/icons/192|512/route.tsx`) kengaytmasiz URL bilan xizmat
+qiladi, shuning uchun middleware'da alohida ro'yxatga olingan.
 
 ## shadcn/ui — Base UI ekanligi (muhim eslatma)
 
@@ -64,20 +66,24 @@ farqni keltirib chiqaradi:
 ```
 /app
   /talaba            → odiltest.uz (middleware orqali)
-    /kirish  /menyu  /organish  /mashq  /test  /natijalar
+    /kirish  /menyu  /organish  /mashq  /test  /natijalar  /offline
   /admin             → admin.odiltest.uz (middleware orqali)
     /kirish  /dashboard  /spravochniklar  /savollar  /savollar/import
-    /testlar  /oquvchilar  /materiallar  /natijalar  /foydalanuvchilar
+    /testlar  /testlar/[id]/kuzatish  /oquvchilar  /materiallar
+    /natijalar  /foydalanuvchilar
   /api
     /auth/oquvchi     /auth/chiqish
     /urinish/boshlash /urinish/javob /urinish/yakunlash
     /mashq/boshlash /mashq/savol /mashq/javob /mashq/yakunlash
     /organish/yakunlash
     /hisobot/pdf/{sinf,oquvchi,kodlar}
+  /icons/{192,512}     ← PWA manifest ikonkalari (next/og, 7-bosqich)
+  manifest.ts          ← PWA manifest (7-bosqich)
 /components  /ui  /student  /admin  kontent-korinish.tsx
 /lib  supabase/  parsers/  actions/  pdf/  auth/  talaba/  i18n/  utils/
 /supabase/migrations
 /public/fonts/DejaVuSans*.ttf   ← PDF uchun (5-bosqichda qo'shildi)
+/public/sw.js                    ← oflayn fallback service worker (7-bosqich)
 ```
 
 **Eslatma:** texnik topshiriqda savol import `/api/import/excel` va
@@ -290,5 +296,54 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
     cheklaydi (`lib/talaba/mashq.ts`, `app/api/mashq/*`).
   - Video material uchun YouTube havolasi `embed` URL'ga o'giriladi
     (`lib/utils/youtube.ts`).
-- Keyingi: **7-bosqich** — Sayqal (jonli kuzatish, statistik tahlil, PWA,
-  offline rejim, sinf rejimi, tezlik optimizatsiyasi).
+- **7-bosqich (Sayqal):** yakunlangan — brauzerda to'liq sinovdan o'tkazildi:
+  admin "Jonli kuzatish" sahifasida talaba tomonida real vaqtda test
+  yechish jarayoni (jarayonda → tugatgan, javob soni, natija) kuzatildi;
+  test davomida `fetch` sun'iy ravishda "oflayn" holatga o'tkazilib, javob
+  localStorage navbatiga tushishi va ulanish tiklanganda (`online` hodisasi)
+  avtomatik serverga jo'natilishi tasdiqlandi; "Sinf rejimi" tugmasi
+  shrift/interfeysni ×1.25 kattalashtirishi va sahifa yangilanganda ham
+  saqlanib qolishi tekshirildi; PWA manifest, ikonkalar va oflayn fallback
+  sahifasi to'g'ri xizmat qilishi tasdiqlandi.
+  - **Jonli kuzatish** (`/admin/testlar/[id]/kuzatish`): tanlangan test
+    sinfidagi barcha faol o'quvchilarning holati (boshlamagan/jarayonda/
+    tugatgan/vaqt tugadi), javob berilgan savollar soni va yakuniy
+    natijasi — 4 soniyada bir marta polling orqali yangilanadi (alohida
+    real-time kanal ochilmagan, `lib/actions/kuzatish.ts`). Faol testlar
+    ro'yxatida "Jonli kuzatish" tugmasi orqali ochiladi
+    (`components/admin/kuzatish-client.tsx`).
+  - **Statistik tahlil:** natijalar sahifasiga "Sinf sust bo'lgan
+    mavzular" tahlili qo'shildi — mavzu bo'yicha to'g'ri javob foizini
+    hisoblab, eng past ko'rsatkichli mavzularni chiqaradi (kamida 3 ta
+    savol-javobi bo'lgan mavzular, shovqinni kamaytirish uchun) —
+    "Eng ko'p xato qilingan savollar" tahlili yonida
+    (`engSustMavzularniOl`, `lib/actions/natijalar.ts`).
+  - **PWA:** `app/manifest.ts` (Next.js fayl konvensiyasi,
+    `/manifest.webmanifest`da xizmat qiladi), ikonkalar `app/icons/192` va
+    `/512` route handler'lari orqali `next/og` bilan runtime'da
+    generatsiya qilinadi (alohida rasm fayli tayyorlash shart emas).
+    Middleware'ga `/icons` uchun istisno qo'shildi (aks holda
+    `/talaba`/`/admin`ga rewrite qilinib 404 bo'lardi).
+  - **Oflayn rejim:** minimal service worker (`public/sw.js`,
+    `components/student/sw-register.tsx`) faqat navigatsiya so'rovlarini
+    ulanish uzilganda `/talaba/offline` sahifasiga yo'naltiradi (to'liq
+    oflayn ilova emas — texnik topshiriqda so'ralgan "fallback sahifa").
+    Test davomida javob yuborish muvaffaqiyatsiz bo'lsa,
+    `lib/talaba/offline-navob.ts` javobni localStorage navbatiga qo'yadi;
+    `online` hodisasida (yoki keyingi mount'da) navbat avtomatik
+    serverga jo'natiladi — brauzerda sun'iy tarmoq xatosi orqali real
+    sinovdan o'tkazilgan.
+  - **Sinf rejimi:** bosh menyudagi tugma orqali `<html>`ga
+    `sinf-rejimi` klassi qo'shiladi (`app/globals.css`dagi
+    `font-size: 125%` qoidasi barcha rem-asoslangan o'lchamlarga ta'sir
+    qiladi), holat localStorage'da saqlanadi va har sahifa ochilganda
+    (`components/student/sinf-rejimi-init.tsx`) tiklanadi.
+  - **Tezlik optimizatsiyasi:** `next.config.ts`ga Supabase Storage
+    domeni uchun `images.remotePatterns` qo'shilib, savol rasmlarini
+    ko'rsatuvchi ikkita talaba komponentida (`test-ekrani.tsx`,
+    `mashq-ekrani.tsx`) `unoptimized` olib tashlandi — endi bu rasmlar
+    next/image orqali optimallashtiriladi. Materiallardagi (admin
+    tomonidan kiritilgan ixtiyoriy tashqi URL) rasmlar va savol
+    formasidagi mahalliy (`blob:`) oldindan ko'rish rasmi domeni
+    noaniq/optimallashtirib bo'lmaydigan bo'lgani uchun ataylab
+    `unoptimized` holida qoldirildi.

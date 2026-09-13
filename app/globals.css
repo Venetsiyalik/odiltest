@@ -128,4 +128,10 @@
   html {
     @apply font-sans;
   }
+  /* "Sinf rejimi" — talaba tomonida shrift/interfeysni ×1.25 kattalashtiradi
+     (texnik topshiriq 3.3-band). rem-ga asoslangan barcha o'lchamlarga
+     ta'sir qilishi uchun ildiz font-size'i o'zgartiriladi. */
+  html.sinf-rejimi {
+    font-size: 125%;
+  }
 }

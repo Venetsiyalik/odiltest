@@ -24,9 +24,11 @@ import { sanaVaVaqtFormat } from "@/lib/utils/sana";
 import {
   natijalarniOl,
   engQiyinSavollarniOl,
+  engSustMavzularniOl,
   type NatijaQatori,
   type NatijalarFiltri,
   type QiyinSavol,
+  type SustMavzu,
 } from "@/lib/actions/natijalar";
 import type { Test } from "@/lib/actions/testlar";
 
@@ -40,18 +42,21 @@ const HAMMASI = "hammasi";
 export function NatijalarClient({
   boshlangichNatijalar,
   boshlangichQiyinSavollar,
+  boshlangichSustMavzular,
   fanlar,
   sinflar,
   testlar,
 }: {
   boshlangichNatijalar: NatijaQatori[];
   boshlangichQiyinSavollar: QiyinSavol[];
+  boshlangichSustMavzular: SustMavzu[];
   fanlar: Nomlangan[];
   sinflar: Nomlangan[];
   testlar: Test[];
 }) {
   const [natijalar, setNatijalar] = useState(boshlangichNatijalar);
   const [qiyinSavollar, setQiyinSavollar] = useState(boshlangichQiyinSavollar);
+  const [sustMavzular, setSustMavzular] = useState(boshlangichSustMavzular);
   const [fanId, setFanId] = useState(HAMMASI);
   const [sinfId, setSinfId] = useState(HAMMASI);
   const [testId, setTestId] = useState(HAMMASI);
@@ -87,7 +92,9 @@ export function NatijalarClient({
     startTransition(async () => {
       const yangiNatijalar = await natijalarniOl(filtr);
       setNatijalar(yangiNatijalar);
-      setQiyinSavollar(await engQiyinSavollarniOl(yangiNatijalar.map((n) => n.urinishId)));
+      const urinishIdlar = yangiNatijalar.map((n) => n.urinishId);
+      setQiyinSavollar(await engQiyinSavollarniOl(urinishIdlar));
+      setSustMavzular(await engSustMavzularniOl(urinishIdlar));
     });
   }
 
@@ -254,19 +261,34 @@ export function NatijalarClient({
         </TableBody>
       </Table>
 
-      {qiyinSavollar.length > 0 && (
-        <div className="flex flex-col gap-2 rounded-md border p-4">
-          <h2 className="text-lg font-semibold">Eng ko&apos;p xato qilingan savollar</h2>
-          <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
-            {qiyinSavollar.map((s) => (
-              <li key={s.savolId}>
-                &quot;{s.matn}&quot; — faqat {s.togriFoiz}% to&apos;g&apos;ri javob (
-                {s.jamiUrinish} urinish)
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <div className="grid gap-4 sm:grid-cols-2">
+        {qiyinSavollar.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-md border p-4">
+            <h2 className="text-lg font-semibold">Eng ko&apos;p xato qilingan savollar</h2>
+            <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+              {qiyinSavollar.map((s) => (
+                <li key={s.savolId}>
+                  &quot;{s.matn}&quot; — faqat {s.togriFoiz}% to&apos;g&apos;ri javob (
+                  {s.jamiUrinish} urinish)
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {sustMavzular.length > 0 && (
+          <div className="flex flex-col gap-2 rounded-md border p-4">
+            <h2 className="text-lg font-semibold">Sinf sust bo&apos;lgan mavzular</h2>
+            <ul className="flex flex-col gap-1 text-sm text-muted-foreground">
+              {sustMavzular.map((m) => (
+                <li key={m.mavzuId}>
+                  {m.nomi} — {m.togriFoiz}% to&apos;g&apos;ri javob ({m.jamiUrinish} ta savol-javob)
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

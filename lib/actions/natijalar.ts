@@ -127,3 +127,52 @@ export async function engQiyinSavollarniOl(urinishIdlar: number[]): Promise<Qiyi
     .sort((a, b) => a.togriFoiz - b.togriFoiz)
     .slice(0, 10);
 }
+
+export interface SustMavzu {
+  mavzuId: number;
+  nomi: string;
+  togriFoiz: number;
+  jamiUrinish: number;
+}
+
+/**
+ * "Qaysi mavzuda sinf sust" tahlili (texnik topshiriq 4.2.7-band) — har bir
+ * mavzu bo'yicha berilgan javoblarning to'g'ri foizini hisoblab, eng past
+ * ko'rsatkichli mavzularni chiqaradi.
+ */
+export async function engSustMavzularniOl(urinishIdlar: number[]): Promise<SustMavzu[]> {
+  if (urinishIdlar.length === 0) return [];
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("urinish_savollari")
+    .select("togri_mi, savollar(mavzu_id, mavzular(id, nomi))")
+    .in("urinish_id", urinishIdlar)
+    .not("togri_mi", "is", null)
+    .returns<
+      { togri_mi: boolean; savollar: { mavzu_id: number | null; mavzular: { id: number; nomi: string } | null } | null }[]
+    >();
+
+  if (error) throw new Error(error.message);
+
+  const xarita = new Map<number, { nomi: string; jami: number; togri: number }>();
+  for (const qator of data ?? []) {
+    const mavzu = qator.savollar?.mavzular;
+    if (!mavzu) continue;
+    const joriy = xarita.get(mavzu.id) ?? { nomi: mavzu.nomi, jami: 0, togri: 0 };
+    joriy.jami += 1;
+    if (qator.togri_mi) joriy.togri += 1;
+    xarita.set(mavzu.id, joriy);
+  }
+
+  return Array.from(xarita.entries())
+    .map(([mavzuId, q]) => ({
+      mavzuId,
+      nomi: q.nomi,
+      togriFoiz: Math.round((q.togri / q.jami) * 100),
+      jamiUrinish: q.jami,
+    }))
+    .filter((q) => q.jamiUrinish >= 3)
+    .sort((a, b) => a.togriFoiz - b.togriFoiz)
+    .slice(0, 10);
+}

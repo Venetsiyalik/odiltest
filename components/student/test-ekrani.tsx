@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { uz } from "@/lib/i18n/uz";
 import type { UrinishDetali } from "@/lib/talaba/urinish-detali";
 import type { Variant } from "@/lib/talaba/aralashtirish";
+import { navbatgaQoshish, navbatniJonatish } from "@/lib/talaba/offline-navob";
 
 const VARIANT_HARFLAR: Variant[] = ["A", "B", "C", "D"];
 
@@ -22,6 +23,7 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
   const [joriyIndeks, setJoriyIndeks] = useState(0);
   const [yakunlashOchiq, setYakunlashOchiq] = useState(false);
   const [yakunlanmoqda, setYakunlanmoqda] = useState(false);
+  const [oflaynMi, setOflaynMi] = useState(false);
   const yakunlanganRef = useRef(false);
 
   const tugashVaqti = useMemo(
@@ -64,6 +66,28 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
     return () => clearInterval(oraliq);
   }, [tugashVaqti, yakunlashniBajarish]);
 
+  // Internet uzilib qolsa, javob localStorage navbatiga qo'yiladi va
+  // ulanish tiklanganda jo'natiladi (texnik topshiriq 3.4-band).
+  useEffect(() => {
+    setOflaynMi(!navigator.onLine);
+    void navbatniJonatish(detali.id);
+
+    function ulandi() {
+      setOflaynMi(false);
+      void navbatniJonatish(detali.id);
+    }
+    function uzildi() {
+      setOflaynMi(true);
+    }
+
+    window.addEventListener("online", ulandi);
+    window.addEventListener("offline", uzildi);
+    return () => {
+      window.removeEventListener("online", ulandi);
+      window.removeEventListener("offline", uzildi);
+    };
+  }, [detali.id]);
+
   async function javobSaqlash(
     savolId: number,
     harf: Variant | null | undefined,
@@ -82,19 +106,26 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
     );
 
     const joriy = savollar.find((s) => s.savolId === savolId);
-    const javob = await fetch("/api/urinish/javob", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        urinishId: detali.id,
-        savolId,
-        tanlanganJavob: harf !== undefined ? harf : (joriy?.tanlanganJavob ?? null),
-        belgilangan: belgilangan !== undefined ? belgilangan : joriy?.belgilangan,
-      }),
-    }).then((r) => r.json());
+    const soralayotganJavob = {
+      urinishId: detali.id,
+      savolId,
+      tanlanganJavob: harf !== undefined ? harf : (joriy?.tanlanganJavob ?? null),
+      belgilangan: belgilangan !== undefined ? belgilangan : joriy?.belgilangan,
+    };
 
-    if (javob.vaqtTugadi) {
-      router.refresh();
+    try {
+      const javob = await fetch("/api/urinish/javob", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(soralayotganJavob),
+      }).then((r) => r.json());
+
+      if (javob.vaqtTugadi) {
+        router.refresh();
+      }
+    } catch {
+      navbatgaQoshish(soralayotganJavob);
+      setOflaynMi(true);
     }
   }
 
@@ -112,6 +143,11 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
   return (
     <main className="flex min-h-screen flex-col gap-4 p-4 sm:p-6">
       <header className="flex flex-col gap-2">
+        {oflaynMi && (
+          <div className="rounded-lg bg-amber-100 px-4 py-2 text-center text-lg font-medium text-amber-900">
+            {uz.talaba.test.oflaynXabari}
+          </div>
+        )}
         <div className="flex items-center justify-between">
           <span className="text-xl font-semibold sm:text-2xl">
             {uz.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
@@ -162,7 +198,6 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
             width={500}
             height={300}
             className="max-h-64 w-auto rounded-lg border object-contain"
-            unoptimized
           />
         )}
 

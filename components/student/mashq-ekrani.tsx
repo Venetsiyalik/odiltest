@@ -167,7 +167,6 @@ export function MashqEkrani({
               alt=""
               width={500}
               height={300}
-              unoptimized
               className="max-h-64 w-auto rounded-lg border object-contain"
             />
           )}

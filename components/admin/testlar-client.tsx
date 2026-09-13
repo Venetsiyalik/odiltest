@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -166,6 +167,16 @@ export function TestlarClient({
                   <Button variant="outline" size="sm" onClick={() => tahrirlash(t)}>
                     Tahrirlash
                   </Button>
+                  {t.holati === "faol" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      nativeButton={false}
+                      render={<Link href={`/testlar/${t.id}/kuzatish`} />}
+                    >
+                      Jonli kuzatish
+                    </Button>
+                  )}
                   {t.holati === "qoralama" && (
                     <Button
                       variant="outline"

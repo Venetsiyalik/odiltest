@@ -2,7 +2,11 @@
 
 Texnik topshiriq: `TEXNIK-TOPSHIRIQ.md` orqali berilgan (dastlab
 `D:\Downloads\TEXNIK-TOPSHIRIQ.md`). Har qanday nomuvofiqlik yuzaga kelsa,
-o'sha hujjat asosiy manba hisoblanadi.
+o'sha hujjat asosiy manba hisoblanadi. 7-bosqichdan keyin (barcha 7
+bosqich yakunlangach) `REDIZAYN.md` orqali qo'shimcha topshiriq berildi —
+ko'rinishni Duolingo/Blooket uslubida yangilash va yangi o'quv
+materiallari/gamifikatsiya modulini qo'shish. Bu ikkinchi hujjatning
+o'zi ham bosqichma-bosqich, alohida bo'lim sifatida quyida hujjatlanadi.
 
 ## Loyiha qisqacha
 
@@ -347,3 +351,57 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
     formasidagi mahalliy (`blob:`) oldindan ko'rish rasmi domeni
     noaniq/optimallashtirib bo'lmaydigan bo'lgani uchun ataylab
     `unoptimized` holida qoldirildi.
+
+---
+
+## REDIZAYN — dizayn tizimi va gamifikatsiya (`REDIZAYN.md`)
+
+Texnik topshiriqning barcha 7 bosqichi yakunlangandan keyin qo'shilgan
+ikkinchi topshiriq. To'liq matn: `REDIZAYN.md`. Bu ham o'z navbatida
+alohida bosqichlarga bo'lingan (`REDIZAYN.md` 9-bo'lim); har biri alohida
+branch, oldingisi tasdiqlangandan keyin boshlanadi — xuddi asosiy texnik
+topshiriq singari.
+
+**Muhim cheklov (REDIZAYN.md 1-bo'lim):** mavjud API marshrutlar, test
+topshirish mantig'i, baza jadvallari (faqat qo'shiladi, o'zgartirilmaydi
+yoki o'chirilmaydi) va xavfsizlik qoidalariga tegilmaydi.
+
+**Vizual assetlar haqida qaror:** Sherbek maskoti (10 xil holat), fan
+personajlari va ovoz effektlari (`.mp3`) hali tayyor emas — bular rasm/
+audio fayllar, men generatsiya qila olmayman. Foydalanuvchi bilan
+kelishilgan qaror: hozircha **placeholder** bilan boshlanadi (Sherbek —
+emoji + rangli doira, tovush — fayl yo'q bo'lsa jim o'tkaziladi), lekin
+komponent API'si va fayl nomlash konvensiyasi (`sherbek-{holat}.png`,
+`/tovush/{nomi}.mp3`) asl fayllar keyinroq shu joylarga qo'yilganda hech
+qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
+
+- **1-bosqich (Dizayn tizimi):** yakunlangan — `/dizayn` ichki demo
+  sahifasida barcha komponentlar ko'rsatilgan, hech bir mavjud sahifa
+  o'zgartirilmagan (brauzerda tekshirildi: talaba `/menyu` va admin
+  `/dashboard` avvalgidek ishlayapti).
+  - `lib/theme.ts` — yagona rang/radius/soya manbai (REDIZAYN.md 2.2-band)
+    + `toqlashtirish()` — 3D tugma soyasi uchun rangni to'qlashtiruvchi
+    yordamchi funksiya. **Qoida:** komponent ichida qo'lda `#hex` yozilmaydi,
+    har doim `theme.ts`dan olinadi.
+  - `components/redizayn/` — yangi, alohida komponent papkasi (mavjud
+    `components/ui/` — shadcn/Base UI asosidagi eski komponentlarga
+    tegilmagan, ular hali barcha admin/talaba sahifalarida ishlatilmoqda):
+    `tugma.tsx` (3D bosiladigan tugma — `:active`da `translateY(4px)` +
+    soya qisqarishi, CSS custom property `--rd-soya` orqali har bir
+    instansiya o'z rangidan hisoblangan soyani oladi), `karta.tsx`,
+    `belgi.tsx` (Badge), `progress-chizigi.tsx` (ProgressBar),
+    `sherbek.tsx` (maskot — placeholder), `tovush-tugmasi.tsx` (🔊/🔇,
+    holat localStorage'da saqlanadi).
+  - `lib/redizayn/tovush.ts` — ovoz effektlari menejeri, standart o'chiq,
+    fayl topilmasa xato tashlamaydi.
+  - Shrift: **Nunito** (`next/font/google`, `app/layout.tsx`da
+    `--font-nunito` o'zgaruvchisi) — faqat redizayn qilingan sahifalarda
+    aniq belgilanadi, mavjud sahifalar hamon Geist'da qoladi.
+  - Fon naqshi: `public/naqsh.svg` (yulduzcha/kitob/qalam, 6% shaffoflik,
+    qo'lda chizilgan SVG pattern).
+  - `app/dizayn/page.tsx` — demo sahifa; middleware'da `/dizayn` istisno
+    qilingan (ikkala domenda ham to'g'ridan-to'g'ri ochiladi, `/admin`
+    yoki `/talaba`ga rewrite qilinmaydi) — chunki bu ichki, auditoriyaga
+    bog'liq bo'lmagan sahifa.
+- Keyingi: **2-bosqich** — Dashboard (yangi bosh sahifa, sinflar
+  tarmog'i, sinf va fan sahifalari).

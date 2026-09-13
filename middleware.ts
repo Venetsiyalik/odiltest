@@ -24,10 +24,14 @@ export function middleware(request: NextRequest) {
   // /admin yoki /talaba ostiga "rewrite" qilinib, 404 bo'lib qolar edi.
   // /icons — PWA manifest ikonkalari (app/icons/*/route.tsx, kengaytmasiz
   // URL bilan xizmat qiladi) ham shu sababli istisno qilinadi.
+  // /dizayn — ichki dizayn tizimi demo sahifasi (REDIZAYN.md), o'quvchi
+  // yoki admin tomoniga tegishli emas, shuning uchun ikkala domenda ham
+  // rewrite qilinmay to'g'ridan-to'g'ri ochiladi.
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/icons") ||
+    pathname.startsWith("/dizayn") ||
     /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();

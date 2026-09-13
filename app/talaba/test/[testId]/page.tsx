@@ -4,6 +4,9 @@ import { createServiceRoleClient } from "@/lib/supabase/server";
 import { oquvchiUrinishlarSoni, faolUrinishniTopish } from "@/lib/talaba/testlar";
 import { TestBoshlashTugmasi } from "@/components/student/test-boshlash-tugmasi";
 import { uz } from "@/lib/i18n/uz";
+import { theme } from "@/lib/theme";
+import { Karta } from "@/components/redizayn/karta";
+import { Belgi } from "@/components/redizayn/belgi";
 
 export default async function TestOgohlantirishPage({
   params,
@@ -45,26 +48,39 @@ export default async function TestOgohlantirishPage({
   const tugagan = qoldi <= 0 && !faolUrinishId;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-xl flex-col items-center justify-center gap-8 p-8 text-center">
-      <h1 className="text-3xl font-semibold sm:text-4xl">{test.nomi}</h1>
-      <div className="flex flex-col gap-2 text-xl text-muted-foreground">
-        <p>{test.fanlar?.nomi}</p>
-        <p>{uz.talaba.test.savolSoni(test.savol_soni)}</p>
-        <p>{uz.talaba.test.vaqt(test.vaqt_daqiqa)}</p>
-        <p>
+    <main
+      className="flex min-h-screen items-center justify-center p-6"
+      style={{
+        background: theme.colors.bg,
+        backgroundImage: "url(/naqsh.svg)",
+        backgroundRepeat: "repeat",
+        color: theme.colors.text,
+        fontFamily: "var(--font-nunito), sans-serif",
+      }}
+    >
+      <Karta className="flex w-full max-w-xl flex-col items-center gap-6 p-10 text-center">
+        <h1 className="text-[32px] font-extrabold sm:text-[40px]" style={{ color: theme.colors.primary }}>
+          {test.nomi}
+        </h1>
+        <div className="flex flex-col gap-2 text-[20px]" style={{ color: theme.colors.muted }}>
+          <p>{test.fanlar?.nomi}</p>
+          <p>{uz.talaba.test.savolSoni(test.savol_soni)}</p>
+          <p>{uz.talaba.test.vaqt(test.vaqt_daqiqa)}</p>
+        </div>
+        <Belgi rang={faolUrinishId ? theme.colors.accent : tugagan ? theme.colors.muted : theme.colors.primary}>
           {faolUrinishId
             ? uz.talaba.test.davomEttirish
             : tugagan
               ? uz.talaba.test.urinishTugadi
               : uz.talaba.test.urinishQoldi(qoldi)}
-        </p>
-      </div>
+        </Belgi>
 
-      {!tugagan && (
-        <div className="w-full max-w-sm">
-          <TestBoshlashTugmasi testId={test.id} />
-        </div>
-      )}
+        {!tugagan && (
+          <div className="w-full max-w-sm">
+            <TestBoshlashTugmasi testId={test.id} />
+          </div>
+        )}
+      </Karta>
     </main>
   );
 }

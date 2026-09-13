@@ -625,6 +625,57 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
     Sherbek reaksiyasi va ✓/✗ belgilari chiqdi; organishda "tekshirish"
     bosqichi va "zor" bilan tugash ekrani to'g'ri ko'rindi; gorizontal
     scroll yo'qligi tasdiqlandi. Sinov ma'lumotlari tozalandi.
-- Keyingi: **7-bosqich** — Rasmiy test ekranini yangilash (sokin
-  uslubda, Kahoot rangli variantlari bilan, lekin animatsiya va
-  personajsiz — 5.6-band talabi).
+- **7-bosqich (redizayn-test):** yakunlangan, `REDIZAYN.md`ning
+  SO'NGGI bosqichi — bu bilan hujjatning barcha 7 bosqichi to'liq
+  yakunlandi. Brauzerda haqiqiy o'quvchi bilan to'liq sinovdan
+  o'tkazildi: rasmiy test boshidan oxirigacha yechildi, Kahoot rangli
+  variant tugmalari to'g'ri ishladi va javob tanlanganda faqat oq
+  halqa+✓ ko'rsatildi (hech qachon to'g'ri/xato ochilmadi), savol
+  navigatori va "Yakunlash (N/N)" tasdiqlash oynasi ishladi, yakunlash-
+  dan keyin daraja oshishi + 4 ta nishon bilan tabrik modali chiqdi va
+  uni yopgandan so'ng natija ekrani (Sherbek + 100%/baho 5) to'g'ri
+  ko'rsatildi. Sinov uchun yaratilgan test/urinish/XP/nishon yozuvlari
+  keyin tozalab tashlandi.
+  - **5.6-band — "Rasmiy testda gamifikatsiya YO'Q":**
+    `components/student/test-ekrani.tsx` butunlay qayta yozildi — endi
+    sokin oq-ko'k uslubda (`theme.colors.surface` foni, playful
+    `naqsh.svg` YO'Q), lekin Kahoot rangli variant tugmalari saqlanib
+    qolgan. Test jarayonida Sherbek, tovush yoki konfetti **hech qayerda
+    chaqirilmaydi** — bular faqat yakunlangandan keyin, natija ekranida
+    (`test-natijasi.tsx`, bu yerda ruxsat etilgan) ko'rsatiladi. Taymer,
+    oflayn javob navbati (`navbatgaQoshish`/`navbatniJonatish`), savol
+    navigatori, "keyin qaytaman" belgisi — bularning barchasining ichki
+    mantig'iga tegilmadi, faqat JSX/uslub almashtirildi.
+  - **`VariantTugmalari` kengaytirildi** (`components/redizayn/
+    variant-tugmalari.tsx`): yangi `belgilanganmi` holati — tanlangan
+    variant hali "ochilmagan" bo'lsa (`ochilganmi={false}`, rasmiy test
+    holati), faqat oq halqa + ✓ ko'rsatiladi, rang o'zgarmaydi va boshqa
+    variantlar xiralashtirilmaydi — shu orqali to'g'ri javob HECH QACHON
+    oshkor qilinmaydi. Mashq/organishda (`ochilganmi={true}`) esa avvalgi
+    xatti-harakat (to'g'risini yashil qilib ochish, xatoni ✗ bilan
+    belgilash) saqlanib qoldi — bitta komponent ikkala holatga ham
+    xizmat qiladi.
+  - `test-boshlash-tugmasi.tsx`, `app/talaba/test/page.tsx`,
+    `app/talaba/test/[testId]/page.tsx` — vizual izchillik uchun
+    Tugma/Karta/Belgi/tema'ga o'tkazildi (sokin, personajsiz — 6-bosqich
+    (redizayn-mashq)dagi `mashq-tanlov.tsx` bilan bir xil uslubda).
+  - **Topilgan va tuzatilgan bug (`TabriklashModali`):** daraja oshishi
+    va bir nechta nishon bir vaqtda berilganda (masalan o'quvchining
+    birinchi rasmiy testi — 4 ta nishon + daraja birga tushishi mumkin),
+    modal kontenti odatiy ekran balandligidan oshib ketardi, lekin ichki
+    scroll YO'Q edi — natijada "Zo'r!" (yopish) tugmasi butunlay
+    yetib bo'lmas holga tushib, o'quvchini test tugagach abadiy
+    tiqilib qolishga majbur qilardi (haqiqiy kiosk qurilmada scroll
+    imkoniyati yo'q). Ekranda avval o'zim sinab ko'rib topdim (avtomatik
+    `scroll_to` ham modalni harakatlantira olmadi). Tuzatish:
+    `components/redizayn/tabriklash-modali.tsx`dagi ichki konteynerga
+    `max-h-[85vh] overflow-y-auto` qo'shildi — endi kontent balandlik
+    chegarasidan oshsa, modalning o'zi ichki scrollbar bilan
+    scroll qilinadi, "Zo'r!" tugmasi har doim yetib bo'ladigan.
+    Tuzatilgandan keyin xuddi shu ssenariy (daraja oshishi + 4 nishon)
+    qayta sinovdan o'tkazilib, tasdiqlandi.
+
+REDIZAYN.md'ning barcha 7 bosqichi (dizayn tizimi, dashboard, o'quv
+materiallari, prezentatsiya ko'ruvchi, gamifikatsiya, mashq/o'rganish
+qayta dizayni, rasmiy test qayta dizayni) shu bilan to'liq yakunlandi —
+asl `TEXNIK-TOPSHIRIQ.md`ning 7 bosqichi ustiga qo'shilgan holda.

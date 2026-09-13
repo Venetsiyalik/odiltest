@@ -592,5 +592,39 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
     ishlash" mashq funksiyasi (`components/student/mashq-ekrani.tsx`,
     6-bosqich) `qaytaUrinish: true` bayrog'ini qo'shimcha yuboradi,
     server shunda beradi.
-- Keyingi: **6-bosqich** — Mashq va o'rganish modullarini yangi
-  dizaynga o'tkazish (personaj reaksiyalari, tovush).
+- **6-bosqich (redizayn-mashq):** yakunlangan — mavjud (asl texnik
+  topshiriq 6-bosqichida qurilgan) `/mashq` va `/organish` modullari
+  yangi dizayn tizimiga o'tkazildi. **Diqqat: bu REDIZAYN.md'ning
+  o'ziga xos 6-bosqichi — asl texnik topshiriqning 6-bosqichi
+  ("O'rganish va mashq modullari") bilan ADASHTIRILMASIN**, ular
+  boshqa-boshqa narsa (asl 6-bosqich — funksionallik qurish; bu
+  bosqich — o'sha funksionallikning ko'rinishini yangilash). Ma'lumot
+  olish/yozish mantig'i, API chaqiruvlari — hech biriga tegilmadi,
+  faqat JSX/uslub qayta yozildi.
+  - `/organish`, `/organish/[fanId]`, `components/student/
+    organish-ekrani.tsx`, `components/student/mashq-tanlov.tsx`,
+    `components/student/mashq-ekrani.tsx` — barchasi Tugma/Karta/
+    ProgressChizigi/Belgi + tema ranglari + Nunito shrift + fon
+    naqshiga o'tkazildi.
+  - **Yangi umumiy komponent** `components/redizayn/variant-tugmalari.tsx`
+    — Kahoot uslubidagi A/B/C/D javob tugmalari (▲qizil/◆ko'k/●sariq/
+    ■yashil, 2.3-band), mashq va o'z-o'zini tekshirish (organish)
+    ikkalasida ham qayta ishlatiladi — ikki joyda alohida-alohida
+    yozish o'rniga.
+  - **Personaj reaksiyalari va tovush:** har ikkala modulda ham javob
+    natijasida Sherbek holati (`tugri`/`xato`) va mos tovush
+    (`tovushChal("togri"|"xato")`) chaqiriladi; mashq/organish
+    yakunlanganda "zor"/"maslahat" holatlari.
+  - `lib/redizayn/fan-rangi.ts` — fan nomini (masalan "Informatika")
+    `theme.fanRanglari`dagi mos rangga bog'laydigan yangi yordamchi
+    (fan kartalarida rangli chiziq/faol holat uchun, 2-3-bosqichlarda
+    qurilgan `/sinf/...` sahifalarida ishlatilmagan — faqat shu
+    bosqichdan boshlab; kelajakda o'sha sahifalarga ham qo'shish mumkin).
+  - Brauzerda haqiqiy o'quvchi bilan to'liq tekshirildi: mashqda
+    to'g'ri/xato javoblarda Kahoot tugmalari to'g'ri rangda ochilib,
+    Sherbek reaksiyasi va ✓/✗ belgilari chiqdi; organishda "tekshirish"
+    bosqichi va "zor" bilan tugash ekrani to'g'ri ko'rindi; gorizontal
+    scroll yo'qligi tasdiqlandi. Sinov ma'lumotlari tozalandi.
+- Keyingi: **7-bosqich** — Rasmiy test ekranini yangilash (sokin
+  uslubda, Kahoot rangli variantlari bilan, lekin animatsiya va
+  personajsiz — 5.6-band talabi).

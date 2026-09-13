@@ -71,11 +71,13 @@ farqni keltirib chiqaradi:
   /api
     /auth/oquvchi     /auth/chiqish
     /urinish/boshlash /urinish/javob /urinish/yakunlash
-    /hisobot/pdf
-/components  /ui  /student  /admin
-/lib  supabase/  parsers/  actions/  pdf/  auth/  i18n/  utils/
+    /mashq/boshlash /mashq/savol /mashq/javob /mashq/yakunlash
+    /organish/yakunlash
+    /hisobot/pdf/{sinf,oquvchi,kodlar}
+/components  /ui  /student  /admin  kontent-korinish.tsx
+/lib  supabase/  parsers/  actions/  pdf/  auth/  talaba/  i18n/  utils/
 /supabase/migrations
-/public/fonts/DejaVuSans.ttf   ← PDF uchun (5-bosqichda qo'shiladi)
+/public/fonts/DejaVuSans*.ttf   ← PDF uchun (5-bosqichda qo'shildi)
 ```
 
 **Eslatma:** texnik topshiriqda savol import `/api/import/excel` va
@@ -265,4 +267,28 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
     client natijasi har doim bir xil. **Hech qachon `toLocaleString`/
     `toLocaleDateString`ni "uz-UZ" locale bilan client komponentda
     ishlatilmasin** — faqat shu ikki funksiyadan foydalaniladi.
-- Keyingi: **6-bosqich** — O'rganish va mashq modullari.
+- **6-bosqich (O'rganish va mashq):** yakunlangan — brauzerda to'liq sinovdan
+  o'tkazildi (admin material qo'shish → talaba nazariya/misol/o'z-o'zini
+  tekshirish/yakun bosqichlaridan o'tishi → progress "1/1 o'rganildi"ga
+  yangilanishi; mashq rejimida aralash savol, to'g'ri/xato fikr-mulohaza,
+  "xato qilingan savollarni qayta ishlash" — barchasi ishladi).
+  - **Kontent formati:** to'liq HTML rich-text muharriri o'rniga **Markdown**
+    tanlandi (`react-markdown` + `remark-gfm` + `remark-math` + `rehype-katex`,
+    `components/kontent-korinish.tsx`) — qalin/ro'yxat/kod blokini,
+    rasmni (`![]()`) va formulani (`$...$`/`$$...$$`, KaTeX orqali) qamraydi,
+    lekin `dangerouslySetInnerHTML` kerak qilmaydi — shu bilan admin/o'qituvchi
+    hisobi buzilgan taqdirda ham XSS xavfi yo'q. Admin formada yon-yon
+    yozish/ko'rish (split-view preview) bor (`components/admin/material-form.tsx`).
+  - Modul A (O'rganish): `/organish` → fan (progress bar bilan) → mavzu →
+    4 bosqich (nazariya → misol → o'z-o'zini tekshirish, ball qo'yilmaydi →
+    yakun). `progress` jadvali `organildi`/`ozini_tekshirish_foiz`ni saqlaydi
+    (`lib/talaba/organish.ts`, `app/api/organish/yakunlash`).
+  - Modul B (Mashq): `/mashq` → fan + mavzu (yoki "aralash") → cheksiz
+    tasodifiy savol, vaqtsiz, darhol to'g'ri/xato + izoh, `mashq_sessiyalar`ga
+    statistika yoziladi (baholanmaydi). "Xato qilingan savollarni qayta
+    ishlash" — `faqatIdlar` filtri bilan savol havzasini xato ro'yxatiga
+    cheklaydi (`lib/talaba/mashq.ts`, `app/api/mashq/*`).
+  - Video material uchun YouTube havolasi `embed` URL'ga o'giriladi
+    (`lib/utils/youtube.ts`).
+- Keyingi: **7-bosqich** — Sayqal (jonli kuzatish, statistik tahlil, PWA,
+  offline rejim, sinf rejimi, tezlik optimizatsiyasi).

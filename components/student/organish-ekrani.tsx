@@ -14,7 +14,7 @@ import { nishonMalumotiniOl } from "@/lib/redizayn/nishonlar-royxati";
 import { Karta } from "@/components/redizayn/karta";
 import { Tugma } from "@/components/redizayn/tugma";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
-import { Sherbek } from "@/components/redizayn/sherbek";
+import { Sherbek } from "@/components/ui/Sherbek";
 import { VariantTugmalari } from "@/components/redizayn/variant-tugmalari";
 import { tovushChal } from "@/lib/redizayn/tovush";
 

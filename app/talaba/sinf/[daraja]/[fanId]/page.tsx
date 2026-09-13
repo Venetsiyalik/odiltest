@@ -6,6 +6,7 @@ import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
+import { FanIkonka } from "@/components/ui/FanIkonka";
 
 const TURI_IKONKASI: Record<string, string> = {
   maruza: "📄",
@@ -59,13 +60,16 @@ export default async function FanSahifasi({
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-6 p-6 pb-16 sm:p-8">
         <div className="flex items-center justify-between">
-          <div>
-            <p className="text-sm" style={{ color: theme.colors.muted }}>
-              {darajaRaqami}-sinf
-            </p>
-            <h1 className="text-[36px] font-extrabold sm:text-[48px]" style={{ color: theme.colors.primary }}>
-              {fanNomi}
-            </h1>
+          <div className="flex items-center gap-3">
+            <FanIkonka fan={fanNomi} size="lg" priority />
+            <div>
+              <p className="text-sm" style={{ color: theme.colors.muted }}>
+                {darajaRaqami}-sinf
+              </p>
+              <h1 className="text-[36px] font-extrabold sm:text-[48px]" style={{ color: theme.colors.primary }}>
+                {fanNomi}
+              </h1>
+            </div>
           </div>
           <Link href={`/sinf/${darajaRaqami}`} className="text-[18px] underline" style={{ color: theme.colors.muted }}>
             Orqaga

@@ -5,6 +5,7 @@ import { darajaFanlariniOl } from "@/lib/redizayn/dashboard";
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
 import { Belgi } from "@/components/redizayn/belgi";
+import { FanIkonka } from "@/components/ui/FanIkonka";
 
 export default async function SinfSahifasi({
   params,
@@ -43,6 +44,7 @@ export default async function SinfSahifasi({
             const mavjud = fan.mavzuSoni > 0;
             const kontent = (
               <Karta bosiladigan={mavjud} className="flex flex-col gap-2">
+                <FanIkonka fan={fan.nomi} size="md" />
                 <p className="text-[20px] font-bold">{fan.nomi}</p>
                 {mavjud ? (
                   <p className="text-sm" style={{ color: theme.colors.muted }}>

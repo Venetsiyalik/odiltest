@@ -1,7 +1,7 @@
 import { uz } from "@/lib/i18n/uz";
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
-import { Sherbek, type SherbekHolati } from "@/components/redizayn/sherbek";
+import { Sherbek, type SherbekHolati } from "@/components/ui/Sherbek";
 import { HavolaTugma } from "@/components/redizayn/tugma";
 
 function sherbekHolatiniTanlash(baho: number): SherbekHolati {

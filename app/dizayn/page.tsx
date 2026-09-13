@@ -3,7 +3,7 @@ import { Tugma, HavolaTugma } from "@/components/redizayn/tugma";
 import { Karta } from "@/components/redizayn/karta";
 import { Belgi } from "@/components/redizayn/belgi";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
-import { Sherbek, type SherbekHolati } from "@/components/redizayn/sherbek";
+import { Sherbek, type SherbekHolati } from "@/components/ui/Sherbek";
 import { TovushTugmasi } from "@/components/redizayn/tovush-tugmasi";
 
 const SHERBEK_HOLATLARI: SherbekHolati[] = [

@@ -226,3 +226,23 @@
     animation: none;
   }
 }
+
+/* Sherbek "sakrash" animatsiyasi (components/ui/Sherbek.tsx,
+   animatsiya="sakrash") — masalan mashqda to'g'ri javob berilganda. */
+@keyframes sherbek-sakrash {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+.sherbek-sakrash {
+  animation: sherbek-sakrash 0.5s ease-in-out 1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .sherbek-sakrash {
+    animation: none;
+  }
+}

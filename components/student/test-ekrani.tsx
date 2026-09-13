@@ -14,6 +14,7 @@ import { Karta } from "@/components/redizayn/karta";
 import { Tugma } from "@/components/redizayn/tugma";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
 import { VariantTugmalari } from "@/components/redizayn/variant-tugmalari";
+import { Sherbek } from "@/components/ui/Sherbek";
 
 /**
  * Rasmiy test ekrani (REDIZAYN.md 5.6-band — "⛔ Rasmiy testda
@@ -190,11 +191,16 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
             <span className="text-[20px] font-bold sm:text-[24px]" style={{ color: theme.colors.primary }}>
               {uz.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
             </span>
-            <span
-              className="text-[24px] font-extrabold tabular-nums sm:text-[28px]"
-              style={{ color: vaqtOzQoldi ? theme.colors.danger : theme.colors.primary }}
-            >
-              {vaqtniFormatlash(qolganSoniya)}
+            <span className="flex items-center gap-2">
+              {/* 5.6-band: rasmiy testda Sherbek ishlatilmaydi — faqat shu
+                  taymer ogohlantirishi bundan mustasno. */}
+              {vaqtOzQoldi && <Sherbek holat="shoshilish" size="sm" />}
+              <span
+                className="text-[24px] font-extrabold tabular-nums sm:text-[28px]"
+                style={{ color: vaqtOzQoldi ? theme.colors.danger : theme.colors.primary }}
+              >
+                {vaqtniFormatlash(qolganSoniya)}
+              </span>
             </span>
           </div>
           <ProgressChizigi foiz={((joriyIndeks + 1) / savollar.length) * 100} rang={theme.colors.primary} />

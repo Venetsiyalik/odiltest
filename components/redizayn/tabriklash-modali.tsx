@@ -29,7 +29,7 @@ export function TabriklashModali({ malumot, yopish }: { malumot: TabriklashMalum
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-6">
       {darajaOshdimi && <Konfetti />}
       <div
-        className="redizayn-paydo-bolish flex max-w-sm flex-col items-center gap-4 p-8 text-center"
+        className="redizayn-paydo-bolish flex max-h-[85vh] max-w-sm flex-col items-center gap-4 overflow-y-auto p-8 text-center"
         style={{ background: theme.colors.surface, borderRadius: theme.radius.lg, boxShadow: theme.shadow.card }}
       >
         {darajaOshdimi && (

@@ -3,15 +3,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { cn } from "@/lib/utils";
 import { uz } from "@/lib/i18n/uz";
 import type { UrinishDetali } from "@/lib/talaba/urinish-detali";
 import type { Variant } from "@/lib/talaba/aralashtirish";
 import { navbatgaQoshish, navbatniJonatish } from "@/lib/talaba/offline-navob";
 import { TabriklashModali } from "@/components/redizayn/tabriklash-modali";
 import { nishonMalumotiniOl } from "@/lib/redizayn/nishonlar-royxati";
+import { theme } from "@/lib/theme";
+import { Karta } from "@/components/redizayn/karta";
+import { Tugma } from "@/components/redizayn/tugma";
+import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
+import { VariantTugmalari } from "@/components/redizayn/variant-tugmalari";
 
-const VARIANT_HARFLAR: Variant[] = ["A", "B", "C", "D"];
+/**
+ * Rasmiy test ekrani (REDIZAYN.md 5.6-band — "⛔ Rasmiy testda
+ * gamifikatsiya YO'Q"): Kahoot rangli variant tugmalari saqlanadi
+ * (o'qish/tanib olishni osonlashtiradi), LEKIN personaj, animatsiya,
+ * tovush, XP va konfetti — bittasi ham ko'rsatilmaydi. Sokin, jiddiy,
+ * oq-ko'k interfeys — baholashning ishonchliligi shu talab qiladi.
+ * Tabrik modali (daraja/nishon) faqat YAKUNLANGANDAN keyin, natija
+ * ekraniga o'tishdan oldin bir martalik ko'rinishda chiqadi.
+ */
 
 interface XpJavobi {
   darajaOshdimi?: boolean;
@@ -160,171 +172,145 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
   const vaqtOzQoldi = qolganSoniya <= 120;
 
   return (
-    <main className="flex min-h-screen flex-col gap-4 p-4 sm:p-6">
-      <header className="flex flex-col gap-2">
-        {oflaynMi && (
-          <div className="rounded-lg bg-amber-100 px-4 py-2 text-center text-lg font-medium text-amber-900">
-            {uz.talaba.test.oflaynXabari}
+    <main
+      className="min-h-screen"
+      style={{ background: theme.colors.surface, color: theme.colors.text, fontFamily: "var(--font-nunito), sans-serif" }}
+    >
+      <div className="mx-auto flex min-h-screen max-w-2xl flex-col gap-4 p-4 sm:p-6">
+        <header className="flex flex-col gap-2">
+          {oflaynMi && (
+            <div
+              className="p-3 text-center text-[18px] font-semibold"
+              style={{ background: `${theme.colors.warning}22`, color: theme.colors.warning, borderRadius: theme.radius.md }}
+            >
+              {uz.talaba.test.oflaynXabari}
+            </div>
+          )}
+          <div className="flex items-center justify-between">
+            <span className="text-[20px] font-bold sm:text-[24px]" style={{ color: theme.colors.primary }}>
+              {uz.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
+            </span>
+            <span
+              className="text-[24px] font-extrabold tabular-nums sm:text-[28px]"
+              style={{ color: vaqtOzQoldi ? theme.colors.danger : theme.colors.primary }}
+            >
+              {vaqtniFormatlash(qolganSoniya)}
+            </span>
           </div>
-        )}
-        <div className="flex items-center justify-between">
-          <span className="text-xl font-semibold sm:text-2xl">
-            {uz.talaba.test.savolRaqami(joriyIndeks + 1, savollar.length)}
-          </span>
-          <span
-            className={cn(
-              "text-2xl font-bold tabular-nums sm:text-3xl",
-              vaqtOzQoldi && "text-destructive",
-            )}
-          >
-            {vaqtniFormatlash(qolganSoniya)}
-          </span>
-        </div>
-        <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full bg-primary transition-all"
-            style={{ width: `${((joriyIndeks + 1) / savollar.length) * 100}%` }}
-          />
-        </div>
-      </header>
+          <ProgressChizigi foiz={((joriyIndeks + 1) / savollar.length) * 100} rang={theme.colors.primary} />
+        </header>
 
-      <div className="flex flex-wrap gap-2">
-        {savollar.map((s, indeks) => (
-          <button
-            key={s.savolId}
-            type="button"
-            onClick={() => setJoriyIndeks(indeks)}
-            className={cn(
-              "flex size-10 items-center justify-center rounded-lg border-2 text-sm font-semibold sm:size-11",
-              indeks === joriyIndeks && "border-primary",
-              s.belgilangan && "border-amber-500 bg-amber-100 text-amber-900",
-              s.tanlanganJavob && !s.belgilangan && "border-primary bg-primary/10",
-              !s.tanlanganJavob && !s.belgilangan && indeks !== joriyIndeks && "border-border",
-            )}
-          >
-            {indeks + 1}
-          </button>
-        ))}
-      </div>
-
-      <section className="flex flex-1 flex-col gap-6 py-4">
-        <p className="text-2xl font-medium sm:text-3xl">{joriySavol.matn}</p>
-
-        {joriySavol.rasmUrl && (
-          <Image
-            src={joriySavol.rasmUrl}
-            alt=""
-            width={500}
-            height={300}
-            className="max-h-64 w-auto rounded-lg border object-contain"
-          />
-        )}
-
-        <div className="flex flex-col gap-3">
-          {VARIANT_HARFLAR.map((harf) => {
-            const tanlangan = joriySavol.tanlanganJavob === harf;
+        <div className="flex flex-wrap gap-2">
+          {savollar.map((s, indeks) => {
+            const faolmi = indeks === joriyIndeks;
+            const rang = s.belgilangan ? theme.colors.warning : s.tanlanganJavob ? theme.colors.primary : theme.colors.muted;
             return (
               <button
-                key={harf}
+                key={s.savolId}
                 type="button"
-                onClick={() => harfTanlash(harf)}
-                className={cn(
-                  "flex min-h-24 w-full items-center gap-4 rounded-2xl border-2 px-6 text-left text-xl font-medium transition-colors sm:text-2xl",
-                  tanlangan
-                    ? "border-primary bg-primary/10"
-                    : "border-border active:bg-muted",
-                )}
+                onClick={() => setJoriyIndeks(indeks)}
+                className="flex size-10 items-center justify-center text-sm font-bold sm:size-11"
+                style={{
+                  borderRadius: theme.radius.sm,
+                  border: `2px solid ${faolmi ? theme.colors.primary : `${rang}55`}`,
+                  background: s.belgilangan ? `${theme.colors.warning}22` : s.tanlanganJavob ? `${theme.colors.primary}15` : "transparent",
+                  color: s.belgilangan ? theme.colors.warning : theme.colors.text,
+                }}
               >
-                <span
-                  className={cn(
-                    "flex size-10 shrink-0 items-center justify-center rounded-full border-2 text-lg font-bold",
-                    tanlangan && "border-primary bg-primary text-primary-foreground",
-                  )}
-                >
-                  {tanlangan ? "✓" : harf}
-                </span>
-                {joriySavol.variantlar[harf]}
+                {indeks + 1}
               </button>
             );
           })}
         </div>
-      </section>
 
-      <footer className="flex flex-wrap items-center justify-between gap-3 border-t pt-4">
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setJoriyIndeks((i) => Math.max(0, i - 1))}
-            disabled={joriyIndeks === 0}
-            className="min-h-16 rounded-xl border-2 border-border px-6 text-xl font-medium active:bg-muted disabled:opacity-40"
-          >
-            {uz.umumiy.orqaga}
-          </button>
-          <button
-            type="button"
-            onClick={belgilashniAlmashtirish}
-            className={cn(
-              "min-h-16 rounded-xl border-2 px-6 text-xl font-medium active:bg-muted",
-              joriySavol.belgilangan ? "border-amber-500 bg-amber-100 text-amber-900" : "border-border",
-            )}
-          >
-            ◆ {uz.talaba.test.belgilash}
-          </button>
-          <button
-            type="button"
-            onClick={() => setJoriyIndeks((i) => Math.min(savollar.length - 1, i + 1))}
-            disabled={joriyIndeks === savollar.length - 1}
-            className="min-h-16 rounded-xl border-2 border-border px-6 text-xl font-medium active:bg-muted disabled:opacity-40"
-          >
-            {uz.umumiy.keyingi}
-          </button>
-        </div>
+        <section className="flex flex-1 flex-col gap-6 py-4">
+          <p className="text-[24px] font-semibold sm:text-[28px]">{joriySavol.matn}</p>
 
-        <button
-          type="button"
-          onClick={() => setYakunlashOchiq(true)}
-          className="min-h-16 rounded-xl bg-primary px-8 text-xl font-semibold text-primary-foreground active:opacity-80"
-        >
-          {uz.talaba.test.yakunlash} ({javobBerilganSoni}/{savollar.length})
-        </button>
-      </footer>
+          {joriySavol.rasmUrl && (
+            <Image
+              src={joriySavol.rasmUrl}
+              alt=""
+              width={500}
+              height={300}
+              className="max-h-64 w-auto object-contain"
+              style={{ borderRadius: theme.radius.md, border: `1px solid ${theme.colors.muted}33` }}
+            />
+          )}
 
-      {yakunlashOchiq && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
-          <div className="flex max-w-md flex-col gap-6 rounded-2xl bg-background p-8 text-center shadow-xl">
-            <p className="text-xl font-medium">{uz.talaba.test.yakunlashTasdiq}</p>
-            <div className="flex flex-col gap-3">
-              <button
-                type="button"
-                onClick={() => void yakunlashniBajarish()}
-                disabled={yakunlanmoqda}
-                className="min-h-16 rounded-xl bg-primary text-xl font-semibold text-primary-foreground active:opacity-80 disabled:opacity-50"
-              >
-                {yakunlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.test.yakunlash}
-              </button>
-              <button
-                type="button"
-                onClick={() => setYakunlashOchiq(false)}
-                disabled={yakunlanmoqda}
-                className="min-h-16 rounded-xl border-2 border-border text-xl font-medium active:bg-muted"
-              >
-                {uz.umumiy.orqaga}
-              </button>
-            </div>
+          <VariantTugmalari
+            variantlar={joriySavol.variantlar}
+            tanlanganJavob={joriySavol.tanlanganJavob}
+            togriJavob={null}
+            onTanlash={harfTanlash}
+            ochilganmi={false}
+          />
+        </section>
+
+        <footer className="flex flex-wrap items-center justify-between gap-3 border-t pt-4" style={{ borderColor: `${theme.colors.muted}33` }}>
+          <div className="flex gap-2">
+            <Tugma
+              rang="outline"
+              hajm="kichik"
+              onClick={() => setJoriyIndeks((i) => Math.max(0, i - 1))}
+              disabled={joriyIndeks === 0}
+            >
+              {uz.umumiy.orqaga}
+            </Tugma>
+            <button
+              type="button"
+              onClick={belgilashniAlmashtirish}
+              className="min-h-[48px] px-4 text-[16px] font-bold"
+              style={{
+                borderRadius: theme.radius.lg,
+                border: `2px solid ${joriySavol.belgilangan ? theme.colors.warning : `${theme.colors.muted}44`}`,
+                background: joriySavol.belgilangan ? `${theme.colors.warning}22` : "transparent",
+                color: joriySavol.belgilangan ? theme.colors.warning : theme.colors.text,
+              }}
+            >
+              ◆ {uz.talaba.test.belgilash}
+            </button>
+            <Tugma
+              rang="outline"
+              hajm="kichik"
+              onClick={() => setJoriyIndeks((i) => Math.min(savollar.length - 1, i + 1))}
+              disabled={joriyIndeks === savollar.length - 1}
+            >
+              {uz.umumiy.keyingi}
+            </Tugma>
           </div>
-        </div>
-      )}
 
-      {tabriklash && (
-        <TabriklashModali
-          malumot={{
-            darajaOshdimi: tabriklash.darajaOshdimi,
-            yangiDaraja: tabriklash.yangiDaraja,
-            yangiNishonlar: (tabriklash.yangiNishonlar ?? []).map((kod) => nishonMalumotiniOl(kod)),
-          }}
-          yopish={() => router.refresh()}
-        />
-      )}
+          <Tugma rang="primary" onClick={() => setYakunlashOchiq(true)}>
+            {uz.talaba.test.yakunlash} ({javobBerilganSoni}/{savollar.length})
+          </Tugma>
+        </footer>
+
+        {yakunlashOchiq && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6">
+            <Karta className="flex max-w-md flex-col gap-6 text-center">
+              <p className="text-[20px] font-semibold">{uz.talaba.test.yakunlashTasdiq}</p>
+              <div className="flex flex-col gap-3">
+                <Tugma rang="primary" onClick={() => void yakunlashniBajarish()} disabled={yakunlanmoqda}>
+                  {yakunlanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.test.yakunlash}
+                </Tugma>
+                <Tugma rang="outline" onClick={() => setYakunlashOchiq(false)} disabled={yakunlanmoqda}>
+                  {uz.umumiy.orqaga}
+                </Tugma>
+              </div>
+            </Karta>
+          </div>
+        )}
+
+        {tabriklash && (
+          <TabriklashModali
+            malumot={{
+              darajaOshdimi: tabriklash.darajaOshdimi,
+              yangiDaraja: tabriklash.yangiDaraja,
+              yangiNishonlar: (tabriklash.yangiNishonlar ?? []).map((kod) => nishonMalumotiniOl(kod)),
+            }}
+            yopish={() => router.refresh()}
+          />
+        )}
+      </div>
     </main>
   );
 }

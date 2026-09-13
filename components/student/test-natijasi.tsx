@@ -1,5 +1,15 @@
-import Link from "next/link";
 import { uz } from "@/lib/i18n/uz";
+import { theme } from "@/lib/theme";
+import { Karta } from "@/components/redizayn/karta";
+import { Sherbek, type SherbekHolati } from "@/components/redizayn/sherbek";
+import { HavolaTugma } from "@/components/redizayn/tugma";
+
+function sherbekHolatiniTanlash(baho: number): SherbekHolati {
+  if (baho >= 5) return "zor";
+  if (baho >= 4) return "tugri";
+  if (baho >= 3) return "oddiy";
+  return "maslahat";
+}
 
 export function TestNatijasi({
   natijaKorsat,
@@ -17,28 +27,44 @@ export function TestNatijasi({
   vaqtTugaganmi: boolean;
 }) {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-8 text-center">
-      {vaqtTugaganmi && (
-        <p className="text-2xl font-medium text-destructive">{uz.talaba.test.vaqtTugadi}</p>
-      )}
-      {natijaKorsat ? (
-        <>
-          <p className="text-6xl font-bold">
-            {togriSoni}/{jamiSavol}
+    <main
+      className="flex min-h-screen items-center justify-center p-6"
+      style={{
+        background: theme.colors.bg,
+        backgroundImage: "url(/naqsh.svg)",
+        backgroundRepeat: "repeat",
+        color: theme.colors.text,
+        fontFamily: "var(--font-nunito), sans-serif",
+      }}
+    >
+      <Karta className="flex max-w-md flex-col items-center gap-4 p-10 text-center">
+        {vaqtTugaganmi && (
+          <p className="text-[18px] font-semibold" style={{ color: theme.colors.danger }}>
+            {uz.talaba.test.vaqtTugadi}
           </p>
-          <p className="text-3xl text-muted-foreground">
-            {ballFoiz}% · baho {baho}
-          </p>
-        </>
-      ) : (
-        <p className="max-w-md text-2xl">{uz.talaba.test.natijaQabulQilindi}</p>
-      )}
-      <Link
-        href="/menyu"
-        className="mt-6 min-h-20 rounded-2xl bg-primary px-10 py-5 text-2xl font-semibold text-primary-foreground active:opacity-80"
-      >
-        {uz.talaba.test.menyugaQaytish}
-      </Link>
+        )}
+
+        {natijaKorsat ? (
+          <>
+            <Sherbek holat={sherbekHolatiniTanlash(baho)} size="lg" />
+            <p className="text-[56px] font-extrabold" style={{ color: theme.colors.primary }}>
+              {togriSoni}/{jamiSavol}
+            </p>
+            <p className="text-[24px]" style={{ color: theme.colors.muted }}>
+              {ballFoiz}% · baho {baho}
+            </p>
+          </>
+        ) : (
+          <>
+            <Sherbek holat="oddiy" size="lg" />
+            <p className="max-w-md text-[20px]">{uz.talaba.test.natijaQabulQilindi}</p>
+          </>
+        )}
+
+        <HavolaTugma href="/menyu" rang="accent" className="mt-2">
+          {uz.talaba.test.menyugaQaytish}
+        </HavolaTugma>
+      </Karta>
     </main>
   );
 }

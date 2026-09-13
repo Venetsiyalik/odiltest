@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { uz } from "@/lib/i18n/uz";
+import { theme } from "@/lib/theme";
+import { Tugma } from "@/components/redizayn/tugma";
 
 export function TestBoshlashTugmasi({ testId }: { testId: number }) {
   const router = useRouter();
@@ -33,15 +35,14 @@ export function TestBoshlashTugmasi({ testId }: { testId: number }) {
 
   return (
     <div className="flex flex-col gap-3">
-      {xato && <p className="text-lg font-medium text-destructive">{xato}</p>}
-      <button
-        type="button"
-        onClick={boshlash}
-        disabled={yuklanmoqda}
-        className="min-h-24 rounded-2xl bg-primary text-3xl font-semibold text-primary-foreground active:opacity-80 disabled:opacity-50"
-      >
+      {xato && (
+        <p className="text-[18px] font-semibold" style={{ color: theme.colors.danger }}>
+          {xato}
+        </p>
+      )}
+      <Tugma onClick={boshlash} disabled={yuklanmoqda} rang="primary" className="w-full">
         {yuklanmoqda ? uz.umumiy.yuklanmoqda : uz.talaba.test.boshlash}
-      </button>
+      </Tugma>
     </div>
   );
 }

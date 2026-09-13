@@ -167,6 +167,16 @@ export function OquvchilarClient({
           </SelectContent>
         </Select>
 
+        {sinfFiltri !== HAMMA_SINF && (
+          <Button
+            variant="outline"
+            nativeButton={false}
+            render={<a href={`/api/hisobot/pdf/kodlar?sinfId=${sinfFiltri}`} />}
+          >
+            Kirish kodlari (PDF)
+          </Button>
+        )}
+
         <Dialog open={qoshishOchiq} onOpenChange={setQoshishOchiq}>
           <DialogTrigger render={<Button />}>Yangi o&apos;quvchi qo&apos;shish</DialogTrigger>
           <DialogContent>

@@ -232,4 +232,37 @@ Har bir PR'dan oldin `npm run typecheck && npm run lint` xatosiz o'tishi shart.
   - Migratsiya 0004: `urinishlar.test_id` endi "restrict" — testni
     o'chirish endi o'quvchi natijalarini yo'q qilib yubormaydi (buning
     o'rniga "Yopish" ishlatiladi).
-- Keyingi: **5-bosqich** — Natijalar va PDF hisobotlar.
+- **5-bosqich (Natijalar + PDF):** yakunlangan — qabul mezoni (sinf
+  hisoboti PDF'ida `o'`, `g'` harflari to'g'ri chiqishi) alohida
+  standalone skript orqali tekshirilib tasdiqlandi.
+  - Admin natijalar sahifasi (`/natijalar`): fan/sinf/test/sana
+    oralig'i/o'quvchi bo'yicha filtr, jadval, sinf/test o'rtachasi, "eng
+    ko'p xato qilingan savollar" tahlili (`lib/actions/natijalar.ts`).
+  - 3 xil PDF (`lib/pdf/documents/*.tsx`, `@react-pdf/renderer`):
+    - `/api/hisobot/pdf/sinf?testId=` — sinf natijalari hisoboti
+    - `/api/hisobot/pdf/oquvchi?oquvchiId=` — bitta o'quvchi tabeli
+      (fan bo'yicha guruhlangan, barcha topshirilgan testlar)
+    - `/api/hisobot/pdf/kodlar?sinfId=` — kirish kodi kartochkalari
+      (A4, 8 tadan, qirqish uchun) — `/oquvchilar` sahifasida tugma
+  - **Shrift muammosi (6-band):** standart PDF shriftlari o'zbekcha
+    `o'`/`g'` belgilarini buzadi. Yechim: DejaVu Sans (ochiq litsenziyali)
+    `public/fonts/DejaVuSans*.ttf`ga qo'shildi va `lib/pdf/shrift.ts`
+    orqali ro'yxatdan o'tkaziladi. **Diqqat:** Windows tizim shriftlari
+    (Arial, Segoe UI) Microsoft litsenziyasiga tegishli va qonuniy
+    tarqatib bo'lmaydi — shu sabab ular EMAS, balki `dejavu-fonts-ttf`
+    npm paketidan bir martalik ajratib olingan DejaVu Sans ishlatildi
+    (paket o'zi runtime bog'liqlik sifatida qo'shilmagan, faqat fayllar
+    nusxalangan). Tasdiqlash standalone Node skripti orqali (`renderToFile`
+    bilan to'g'ridan-to'g'ri, brauzer/base64 oraliq bosqichisiz) qilindi —
+    brauzer orqali PDF fetch qilib base64'ga o'girish katta matnlarda
+    transkripsiya xatosiga olib kelishi mumkin ekan.
+  - **Muhim bug tuzatildi:** `toLocaleString("uz-UZ", ...)` / `toLocaleDateString("uz-UZ")`
+    server (Node, kichik ICU) va brauzerda har xil natija berib, client
+    komponentlarda hydration xatosiga olib kelayotgan edi (server
+    "2026-09-12 22:23", client "12/09/2026, 22:23"). Yechim:
+    `lib/utils/sana.ts`dagi qo'lda formatlovchi `sanaFormat`/`sanaVaVaqtFormat`
+    — bular Intl/locale'ga umuman tayanmaydi, shuning uchun server va
+    client natijasi har doim bir xil. **Hech qachon `toLocaleString`/
+    `toLocaleDateString`ni "uz-UZ" locale bilan client komponentda
+    ishlatilmasin** — faqat shu ikki funksiyadan foydalaniladi.
+- Keyingi: **6-bosqich** — O'rganish va mashq modullari.

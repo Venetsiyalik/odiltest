@@ -37,6 +37,7 @@ import {
 } from "@/lib/actions/testlar";
 import type { Mavzu } from "@/lib/actions/spravochniklar";
 import type { Savol } from "@/lib/actions/savollar";
+import { sanaVaVaqtFormat } from "@/lib/utils/sana";
 
 interface Nomlangan {
   id: number;
@@ -49,15 +50,6 @@ const HOLATI_YORLIQ: Record<Test["holati"], { matn: string; variant: "default" |
   yopiq: { matn: "Yopiq", variant: "destructive" },
 };
 
-function sanaFormat(iso: string): string {
-  return new Date(iso).toLocaleString("uz-UZ", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 export function TestlarClient({
   testlar,
@@ -164,7 +156,7 @@ export function TestlarClient({
                 {t.fanlar?.nomi} / {t.sinflar?.nomi}
               </TableCell>
               <TableCell className="text-sm text-muted-foreground">
-                {sanaFormat(t.ochilish_vaqti)} — {sanaFormat(t.yopilish_vaqti)}
+                {sanaVaVaqtFormat(t.ochilish_vaqti)} — {sanaVaVaqtFormat(t.yopilish_vaqti)}
               </TableCell>
               <TableCell>
                 <Badge variant={HOLATI_YORLIQ[t.holati].variant}>{HOLATI_YORLIQ[t.holati].matn}</Badge>

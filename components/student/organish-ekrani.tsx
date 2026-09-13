@@ -9,8 +9,16 @@ import { youtubeEmbedUrl } from "@/lib/utils/youtube";
 import { KontentKorinish } from "@/components/kontent-korinish";
 import type { MavzuDetali } from "@/lib/talaba/organish";
 import type { Variant } from "@/lib/talaba/aralashtirish";
+import { TabriklashModali } from "@/components/redizayn/tabriklash-modali";
+import { nishonMalumotiniOl } from "@/lib/redizayn/nishonlar-royxati";
 
 const VARIANT_HARFLAR: Variant[] = ["A", "B", "C", "D"];
+
+interface XpJavobi {
+  darajaOshdimi?: boolean;
+  yangiDaraja?: number;
+  yangiNishonlar?: string[];
+}
 
 type Bosqich = "nazariya" | "misol" | "tekshirish" | "yakun";
 
@@ -43,6 +51,7 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
   const [togriSoni, setTogriSoni] = useState(0);
   const [yuklanmoqda, setYuklanmoqda] = useState(false);
   const [yakunlanmoqda, setYakunlanmoqda] = useState(false);
+  const [tabriklash, setTabriklash] = useState<XpJavobi | null>(null);
 
   const joriyBosqich = bosqichlar[bosqichIndeksi];
   const joriySavol = detali.ozOziniTekshirishSavollari[savolIndeksi];
@@ -75,6 +84,11 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
     }
   }
 
+  function organishdanChiqish() {
+    router.push("/organish");
+    router.refresh();
+  }
+
   async function yakunlashniBajarish() {
     setYakunlanmoqda(true);
     try {
@@ -82,13 +96,17 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
         detali.ozOziniTekshirishSavollari.length > 0
           ? Math.round((togriSoni / detali.ozOziniTekshirishSavollari.length) * 100)
           : 100;
-      await fetch("/api/organish/yakunlash", {
+      const natija: XpJavobi = await fetch("/api/organish/yakunlash", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ mavzuId, oziniTekshirishFoiz: foiz }),
-      });
-      router.push("/organish");
-      router.refresh();
+      }).then((r) => r.json());
+
+      if (natija.darajaOshdimi || (natija.yangiNishonlar?.length ?? 0) > 0) {
+        setTabriklash(natija);
+      } else {
+        organishdanChiqish();
+      }
     } finally {
       setYakunlanmoqda(false);
     }
@@ -224,6 +242,17 @@ export function OrganishEkrani({ mavzuId, detali }: { mavzuId: number; detali: M
             {uz.umumiy.keyingi}
           </button>
         </footer>
+      )}
+
+      {tabriklash && (
+        <TabriklashModali
+          malumot={{
+            darajaOshdimi: tabriklash.darajaOshdimi,
+            yangiDaraja: tabriklash.yangiDaraja,
+            yangiNishonlar: (tabriklash.yangiNishonlar ?? []).map((kod) => nishonMalumotiniOl(kod)),
+          }}
+          yopish={organishdanChiqish}
+        />
       )}
     </main>
   );

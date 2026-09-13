@@ -8,8 +8,16 @@ import { uz } from "@/lib/i18n/uz";
 import type { UrinishDetali } from "@/lib/talaba/urinish-detali";
 import type { Variant } from "@/lib/talaba/aralashtirish";
 import { navbatgaQoshish, navbatniJonatish } from "@/lib/talaba/offline-navob";
+import { TabriklashModali } from "@/components/redizayn/tabriklash-modali";
+import { nishonMalumotiniOl } from "@/lib/redizayn/nishonlar-royxati";
 
 const VARIANT_HARFLAR: Variant[] = ["A", "B", "C", "D"];
+
+interface XpJavobi {
+  darajaOshdimi?: boolean;
+  yangiDaraja?: number;
+  yangiNishonlar?: string[];
+}
 
 function vaqtniFormatlash(soniya: number): string {
   const daqiqa = Math.floor(soniya / 60);
@@ -24,6 +32,7 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
   const [yakunlashOchiq, setYakunlashOchiq] = useState(false);
   const [yakunlanmoqda, setYakunlanmoqda] = useState(false);
   const [oflaynMi, setOflaynMi] = useState(false);
+  const [tabriklash, setTabriklash] = useState<XpJavobi | null>(null);
   const yakunlanganRef = useRef(false);
 
   const tugashVaqti = useMemo(
@@ -36,21 +45,31 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
 
   const joriySavol = savollar[joriyIndeks];
 
+  function tabriklashniKorsatishYokiYangilash(xpMalumot: XpJavobi | undefined) {
+    if (xpMalumot && (xpMalumot.darajaOshdimi || (xpMalumot.yangiNishonlar?.length ?? 0) > 0)) {
+      setTabriklash(xpMalumot);
+    } else {
+      router.refresh();
+    }
+  }
+
   const yakunlashniBajarish = useMemo(
     () => async () => {
       if (yakunlanganRef.current) return;
       yakunlanganRef.current = true;
       setYakunlanmoqda(true);
       try {
-        await fetch("/api/urinish/yakunlash", {
+        const natija: XpJavobi = await fetch("/api/urinish/yakunlash", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ urinishId: detali.id }),
-        });
-      } finally {
+        }).then((r) => r.json());
+        tabriklashniKorsatishYokiYangilash(natija);
+      } catch {
         router.refresh();
       }
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [detali.id, router],
   );
 
@@ -121,7 +140,7 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
       }).then((r) => r.json());
 
       if (javob.vaqtTugadi) {
-        router.refresh();
+        tabriklashniKorsatishYokiYangilash(javob.natija as XpJavobi | undefined);
       }
     } catch {
       navbatgaQoshish(soralayotganJavob);
@@ -294,6 +313,17 @@ export function TestEkrani({ detali }: { detali: UrinishDetali }) {
             </div>
           </div>
         </div>
+      )}
+
+      {tabriklash && (
+        <TabriklashModali
+          malumot={{
+            darajaOshdimi: tabriklash.darajaOshdimi,
+            yangiDaraja: tabriklash.yangiDaraja,
+            yangiNishonlar: (tabriklash.yangiNishonlar ?? []).map((kod) => nishonMalumotiniOl(kod)),
+          }}
+          yopish={() => router.refresh()}
+        />
       )}
     </main>
   );

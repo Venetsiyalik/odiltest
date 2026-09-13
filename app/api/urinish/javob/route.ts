@@ -4,6 +4,7 @@ import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import type { Variant, VariantTartibi } from "@/lib/talaba/aralashtirish";
 import { urinishniYakunlash } from "@/lib/talaba/urinish-yakunlash";
+import { xpBerish } from "@/lib/redizayn/gamifikatsiya";
 
 const tanaSxemasi = z.object({
   urinishId: z.number().int().positive(),
@@ -47,7 +48,13 @@ export async function POST(so_rov: Request) {
   const tugashVaqti = new Date(urinish.boshlandi).getTime() + vaqtDaqiqa * 60 * 1000;
   if (Date.now() > tugashVaqti) {
     const natija = await urinishniYakunlash(urinishId, "vaqt_tugadi");
-    return NextResponse.json({ vaqtTugadi: true, natija });
+    if (!natija) return NextResponse.json({ vaqtTugadi: true, natija });
+
+    // REDIZAYN.md 5.1-band — vaqt tugab avtomatik yakunlanganda ham XP
+    // beriladi, xuddi o'quvchi bosib yakunlagandek (bu ham "test topshirish").
+    const xpMiqdori = 30 + (natija.ballFoiz >= 90 ? 20 : 0);
+    const xpNatijasi = await xpBerish(oquvchi.id, xpMiqdori, "test_topshirildi");
+    return NextResponse.json({ vaqtTugadi: true, natija: { ...natija, xpOlindi: xpMiqdori, ...xpNatijasi } });
   }
 
   const { data: urinishSavoli } = await supabase

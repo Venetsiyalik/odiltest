@@ -533,5 +533,64 @@ qanday kodni o'zgartirmasdan ishlaydigan qilib qurilgan.
     shunchaki PDF so'rashni tavsiya qiladi — aynan shu standart xatti-
     harakat, alohida ishlab chiqilmagan holda ham, tabiiy ravishda
     ta'minlanadi (faqat PDF/tashqi havola qo'llab-quvvatlanadi).
-- Keyingi: **5-bosqich** — Gamifikatsiya (XP, daraja, kunlik seriya,
-  nishonlar, avatarlar, sinf reytingi).
+- **5-bosqich (Gamifikatsiya):** yakunlangan — brauzerda to'liq sinovdan
+  o'tkazildi: mashqda to'g'ri javob berilganda XP+kunlik seriya to'g'ri
+  hisoblandi, mavzu birinchi marta o'rganilganda +20 XP berildi (qayta
+  tashrifda berilmadi), test topshirilganda +30 XP va daraja 2'ga
+  o'tganda tabrik modali (Sherbek kubok + konfetti) to'g'ri chiqdi,
+  4 ta nishon avtomatik aniqlanib berildi (mavjud tarixiy ma'lumotlar
+  asosida — "birinchi_qadam", "benuqson", "mavzu_ustasi", "sinf_faxri"),
+  avatar tanlash ishladi va Dashboard'da darhol ko'rindi, "Sinflar
+  reytingi" bo'limi endi haqiqiy XP bilan ko'rsatildi. Sinov uchun
+  yaratilgan test/urinish/progress/XP yozuvlari keyin tozalab tashlandi.
+  - **Migratsiya** (`0006_redizayn_gamifikatsiya.sql`): `xp_jurnal`,
+    `oquvchi_holati`, `nishonlar` (12 ta urug' yozuv bilan),
+    `oquvchi_nishonlari` — hammasi butunlay yangi, mavjud jadvallarga
+    tegilmagan.
+  - `lib/redizayn/gamifikatsiya.ts` — yagona server-only modul: XP
+    qo'shish, daraja hisoblash (`floor(sqrt(xp/50))+1`), kunlik seriya/
+    muzlatgich mantig'i (Toshkent vaqti, UTC+5 qo'lda hisoblanadi — DST
+    yo'q), 11 ta nishonni avtomatik tekshirish (12-chisi, "Qat'iyatli",
+    klientdan kelgan bayroq orqali alohida beriladi — quyida), sinf
+    reytingi (shu hafta), avatar tanlash.
+  - **Muhim arxitektura qarori — mavjud API'larga side-effect sifatida
+    qo'shildi, imzolari buzilmadi:** `/api/mashq/javob`ga +2 XP,
+    `/api/organish/yakunlash`ga +20 XP (faqat birinchi marta),
+    `/api/urinish/yakunlash` va `/api/urinish/javob` (vaqt tugaganda)ga
+    +30(+20 bonus) XP — javob shakliga faqat YANGI, qo'shimcha
+    maydonlar qo'shildi (`xpOlindi`, `darajaOshdimi`, `yangiNishonlar`),
+    mavjud maydon o'zgartirilmadi/o'chirilmadi. `lib/talaba/
+    urinish-yakunlash.ts` (test ballini hisoblovchi umumiy funksiya)ga
+    HECH TEGILMADI — XP faqat uni chaqiruvchi route handler'larda
+    qo'shildi.
+  - **Tezlik/UX qarori:** mashq javobi (tez-tez, har savolda) uchun
+    Next.js'ning `after()` API'si ishlatiladi — javobni sekinlashtirmaydi,
+    lekin serverless funksiya to'liq bajarilgunicha ishlab turishini
+    kafolatlaydi (oddiy "fire-and-forget" bunga kafolat bermaydi,
+    Vercel funksiyasi javobdan keyin darhol to'xtatilishi mumkin). Test
+    topshirish va mavzu tugatish esa (kamdan-kam sodir bo'ladigan
+    harakatlar) to'g'ridan-to'g'ri kutiladi — shu orqali natija
+    ekranida darhol "daraja oshdi"/"yangi nishon" tabrik modalini
+    ko'rsatish mumkin bo'ladi.
+  - `components/redizayn/tabriklash-modali.tsx` + `konfetti.tsx` —
+    daraja oshganda/nishon olinganda ko'rsatiladi (faqat CSS transform/
+    opacity, 2.7-band talabiga mos, `prefers-reduced-motion` hurmat
+    qilinadi).
+  - `AVATARLAR` va nishon ma'lumotlari (`lib/redizayn/avatarlar-royxati.ts`,
+    `lib/redizayn/nishonlar-royxati.ts`) ataylab `gamifikatsiya.ts`dan
+    ALOHIDA fayllarda — chunki ular klient komponentlarida (avatar
+    tanlagich, tabrik modali) ham kerak, `gamifikatsiya.ts` esa
+    server-only kod (`service_role`) import qiladi va klientga
+    bundle qilinmasligi shart.
+  - Yangi `/nishonlar` sahifasi (avatar tanlash + 12 ta nishon holati)
+    `/menyu`dan havola orqali ochiladi. Dashboard tepa satriga
+    avatar/daraja/XP/seriya/kunlik-maqsad progress-bar qo'shildi,
+    "Sinflar reytingi" endi haqiqiy (bu haftagi) ma'lumot ko'rsatadi.
+  - **"Qat'iyatli" nishoni:** serverda mustaqil aniqlab bo'lmaydigan
+    holat (xato→qayta urinib to'g'ri topish, alohida urinish-tarixi
+    jadvali yo'q) — shuning uchun mavjud "xato qilinganlarni qayta
+    ishlash" mashq funksiyasi (`components/student/mashq-ekrani.tsx`,
+    6-bosqich) `qaytaUrinish: true` bayrog'ini qo'shimcha yuboradi,
+    server shunda beradi.
+- Keyingi: **6-bosqich** — Mashq va o'rganish modullarini yangi
+  dizaynga o'tkazish (personaj reaksiyalari, tovush).

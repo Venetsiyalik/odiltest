@@ -5,6 +5,7 @@ import { oquvchiHolatiniOl, oquvchiNishonlariniOl } from "@/lib/redizayn/gamifik
 import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
 import { AvatarTanlagich } from "@/components/redizayn/avatar-tanlagich";
+import { Ikonka } from "@/components/ui/Ikonka";
 
 export default async function NishonlarSahifasi() {
   const oquvchi = await joriyOquvchiniOl();
@@ -28,7 +29,8 @@ export default async function NishonlarSahifasi() {
     >
       <div className="mx-auto flex max-w-3xl flex-col gap-8 p-6 pb-16 sm:p-8">
         <div className="flex items-center justify-between">
-          <h1 className="text-[36px] font-extrabold" style={{ color: theme.colors.primary }}>
+          <h1 className="flex items-center gap-3 text-[36px] font-extrabold" style={{ color: theme.colors.primary }}>
+            <Ikonka nom="medal" size="lg" priority />
             Nishonlarim
           </h1>
           <Link href="/menyu" className="text-[16px] underline" style={{ color: theme.colors.muted }}>
@@ -54,7 +56,11 @@ export default async function NishonlarSahifasi() {
                 className="flex flex-col items-center gap-1 py-5 text-center"
                 style={{ opacity: nishon.olinganmi ? 1 : 0.45 }}
               >
-                <span className="text-4xl">{nishon.olinganmi ? nishon.ikonka : "🔒"}</span>
+                {nishon.olinganmi ? (
+                  <span className="text-4xl">{nishon.ikonka}</span>
+                ) : (
+                  <Ikonka nom="qalqon" size="lg" />
+                )}
                 <p className="text-sm font-bold">{nishon.nomi}</p>
                 <p className="text-xs" style={{ color: theme.colors.muted }}>
                   {nishon.tavsif}

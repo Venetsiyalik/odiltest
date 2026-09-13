@@ -7,7 +7,8 @@ import { theme } from "@/lib/theme";
 import { saytUrliniOl } from "@/lib/utils/site-url";
 import { Logo } from "@/components/ui/Logo";
 import { Karta } from "@/components/redizayn/karta";
-import { Sherbek } from "@/components/redizayn/sherbek";
+import { Sherbek } from "@/components/ui/Sherbek";
+import { Ikonka } from "@/components/ui/Ikonka";
 import { Belgi } from "@/components/redizayn/belgi";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
 import { Qidiruv } from "@/components/redizayn/qidiruv";
@@ -76,10 +77,15 @@ export default async function DashboardSahifasi() {
               </div>
 
               <div className="flex flex-wrap items-center gap-2">
-                <Belgi rang={theme.colors.primary}>Daraja {holat.daraja}</Belgi>
-                <Belgi>{holat.jamiXp} XP</Belgi>
+                <Belgi rang={theme.colors.primary}>
+                  <Ikonka nom="kubok" size="sm" /> Daraja {holat.daraja}
+                </Belgi>
+                <Belgi>
+                  <Ikonka nom="yulduz" size="sm" /> {holat.jamiXp} XP
+                </Belgi>
                 <Belgi rang={theme.colors.success}>
-                  🔥 {holat.seriya} kun{holat.muzlatgich > 0 ? ` · ❄️×${holat.muzlatgich}` : ""}
+                  <Ikonka nom="olov" size="sm" /> {holat.seriya} kun
+                  {holat.muzlatgich > 0 ? ` · ❄️×${holat.muzlatgich}` : ""}
                 </Belgi>
                 <HavolaTugma href="/menyu" rang="primary" hajm="kichik">
                   Shaxsiy kabinet
@@ -154,7 +160,7 @@ export default async function DashboardSahifasi() {
             <h2 className="text-[20px] font-bold">Sinflar reytingi (shu hafta)</h2>
             {sinfReytingi.length === 0 ? (
               <Karta className="flex flex-col items-center gap-2 py-8 text-center">
-                <Sherbek holat="maslahat" />
+                <Sherbek holat="maslahat" size="lg" />
                 <p style={{ color: theme.colors.muted }}>Bu hafta hali XP to&apos;plangani yo&apos;q</p>
               </Karta>
             ) : (
@@ -173,7 +179,7 @@ export default async function DashboardSahifasi() {
           <section className="flex flex-col gap-3">
             <h2 className="text-[20px] font-bold">Oxirgi qo&apos;shilgan materiallar</h2>
             <Karta className="flex flex-col items-center gap-2 py-8 text-center">
-              <Sherbek holat="kitob" />
+              <Sherbek holat="kitob" size="lg" />
               <p style={{ color: theme.colors.muted }}>
                 Tez orada — o&apos;quv materiallari moduli qo&apos;shilgach shu yerda ko&apos;rinadi
               </p>

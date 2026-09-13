@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { theme } from "@/lib/theme";
-import { Sherbek } from "@/components/redizayn/sherbek";
+import { Sherbek } from "@/components/ui/Sherbek";
 import { Tugma } from "@/components/redizayn/tugma";
 import { Konfetti } from "@/components/redizayn/konfetti";
 import { tovushChal } from "@/lib/redizayn/tovush";

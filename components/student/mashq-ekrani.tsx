@@ -8,7 +8,7 @@ import { theme } from "@/lib/theme";
 import { Karta } from "@/components/redizayn/karta";
 import { Tugma } from "@/components/redizayn/tugma";
 import { Belgi } from "@/components/redizayn/belgi";
-import { Sherbek } from "@/components/redizayn/sherbek";
+import { Sherbek } from "@/components/ui/Sherbek";
 import { VariantTugmalari } from "@/components/redizayn/variant-tugmalari";
 import { tovushChal } from "@/lib/redizayn/tovush";
 
@@ -207,7 +207,10 @@ export function MashqEkrani({
 
             {natija && (
               <Karta className="flex flex-col items-center gap-3 text-center">
-                <Sherbek holat={natija.togriMi ? "tugri" : "xato"} />
+                <Sherbek
+                  holat={natija.togriMi ? "zor" : "xato"}
+                  animatsiya={natija.togriMi ? "sakrash" : "yoq"}
+                />
                 <p
                   className="text-[20px] font-bold"
                   style={{ color: natija.togriMi ? theme.colors.success : theme.colors.danger }}

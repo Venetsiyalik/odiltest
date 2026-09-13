@@ -896,5 +896,47 @@ jadvalini ommaviy to'ldirish uchun. Yakunlangan, `main`ga birlashtirilgan.
   personajlar/` papkasida haqiqiy Sherbek, fan va nishon rasmlari
   (`.png`/`.webp`) allaqachon qo'shilgan ekan (git tomonidan kuzatilmagan
   holda) — bular hozircha ulanmagan, chunki bu so'rov faqat logotip haqida
-  edi. Agar xohlasangiz, keyingi safar shu rasmlarni ham
-  `Sherbek`/fan-personajlari komponentlariga ulab beraman.
+  edi. Keyingi bosqichda (quyida) ulandi.
+
+---
+
+## Personajlar — Sherbek, fan va gamifikatsiya ikonkalari
+
+`/public/personajlar/` ga haqiqiy illyustratsiyalar (`.png`+`.webp`,
+shaffof fon) qo'shilgandan keyin ulandi.
+
+- **`components/ui/Sherbek.tsx`** — eski `components/redizayn/sherbek.tsx`
+  (emoji-placeholder) o'rniga **yangi joyda** butunlay qayta yozildi va
+  barcha eski chaqiruvchilar (talaba Dashboard, tabriklash-modali,
+  test-natijasi, mashq/organish-ekrani, /dizayn) shu yangi joyga
+  ko'chirildi — eski fayl o'chirildi (ikkita Sherbek qolib
+  ketmasligi uchun). `holat` turi 11 qiymatni qamraydi, lekin haqiqiy
+  fayl faqat 3 tasida bor (`oddiy`/`zor`/`shoshilish`) — qolganlari
+  so'ralsa, `oddiy`ga tushadi va konsolga BIR MARTA (holat boshiga)
+  ogohlantirish chiqadi, ilova hech qachon qulab tushmaydi. `<picture>`
+  (webp birinchi, png zaxira) ataylab oddiy HTML bilan qilingan —
+  next/image ichki `<img>`i qo'lda `<picture>/<source>` bilan mos
+  kelmaydi. `animatsiya="nafas"` mavjud `.logo-nafas` klassini qayta
+  ishlatadi, `"sakrash"` uchun yangi `.sherbek-sakrash` qo'shildi
+  (`app/globals.css`, ikkalasi ham `prefers-reduced-motion` hurmat qiladi).
+  - Yangi ishlatilgan joylar: kirish kodi klaviaturasi (`oddiy`, `xl`,
+    `nafas` — Logo ostida), mashqda **to'g'ri** javob (`zor`+`sakrash`,
+    ilgari `tugri` edi — fayli yo'q edi), rasmiy test ekranida taymer
+    2 daqiqadan kamlaganda (`shoshilish`, `sm` — 5.6-band bo'yicha
+    BOSHQA hech qanday Sherbek shu ekranda yo'q, faqat shu yagona
+    istisno). Bo'sh holat kartalari (Dashboard, /organish) `size="lg"`ga
+    oshirildi.
+- **`lib/fanlar.ts` + `components/ui/FanIkonka.tsx`** — bazadagi xom fan
+  nomini (`fan.nomi`, masalan "Ingliz tili") ikonka fayliga moslaydi
+  (`lib/redizayn/fan-rangi.ts` bilan bir xil 9 ta fan ro'yxati, birinchi
+  so'z bo'yicha qidiradi — "Ingliz tili" -> "ingliz"). Mos kelmasa xato
+  bermay neytral zaxira doira ko'rsatadi. `/sinf/[daraja]` (fan kartalari)
+  va `/sinf/[daraja]/[fanId]` (banner, `priority`) ga qo'yildi.
+- **`components/ui/Ikonka.tsx`** — kichik gamifikatsiya ikonkalari
+  (`public/personajlar/ikonka/`). Dashboard sarlavhasidagi Daraja/XP/
+  seriya belgilariga (`kubok`/`yulduz`/`olov`, ilgari 🏆/⭐/🔥 emoji edi)
+  va `/nishonlar` sahifasiga (sarlavhada `medal`, qulflangan nishonlarda
+  `qalqon` — ilgari 🔒 emoji edi) qo'yildi. Har bir nishonning o'zining
+  alohida emoji-ikonkasi (`nishonlar-royxati.ts`dagi 12 xil) ataylab
+  o'zgartirilmadi — faqat bitta umumiy nishon-ikonkasi bilan almashtirish
+  ularning bir-biridan ajralib turishini yo'qotgan bo'lardi.

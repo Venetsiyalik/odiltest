@@ -7,7 +7,7 @@ import { theme } from "@/lib/theme";
 import { uz } from "@/lib/i18n/uz";
 import { Karta } from "@/components/redizayn/karta";
 import { ProgressChizigi } from "@/components/redizayn/progress-chizigi";
-import { Sherbek } from "@/components/redizayn/sherbek";
+import { Sherbek } from "@/components/ui/Sherbek";
 
 export default async function OrganishPage() {
   const oquvchi = await joriyOquvchiniOl();
@@ -38,7 +38,7 @@ export default async function OrganishPage() {
 
         {fanlar.length === 0 && (
           <Karta className="flex flex-col items-center gap-3 py-10 text-center">
-            <Sherbek holat="maslahat" />
+            <Sherbek holat="maslahat" size="lg" />
             <p style={{ color: theme.colors.muted }}>Hozircha fan mavjud emas</p>
           </Karta>
         )}

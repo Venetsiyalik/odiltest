@@ -10,6 +10,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Logo } from "@/components/ui/Logo";
 import {
   Card,
   CardContent,
@@ -54,11 +55,12 @@ export default function AdminKirishPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center p-4">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
+      <Logo size="lg" withText priority />
       <Card className="w-full max-w-sm">
         <CardHeader>
           <CardTitle>Admin panelga kirish</CardTitle>
-          <CardDescription>Odil School — o&apos;quv va baholash platformasi</CardDescription>
+          <CardDescription>Boshqaruv paneli</CardDescription>
         </CardHeader>
         <CardContent>
           <form className="flex flex-col gap-4" onSubmit={handleSubmit(onSubmit)}>

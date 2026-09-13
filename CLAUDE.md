@@ -827,3 +827,74 @@ jadvalini ommaviy to'ldirish uchun. Yakunlangan, `main`ga birlashtirilgan.
   `/sinf/5/4` (yangi yaratilgan fan) sahifalarida chorak bo'yicha
   guruhlangan holda to'g'ri ko'rindi. Sinov uchun yaratilgan mavzu/fan/
   importlar yozuvlari keyin tozalab tashlandi.
+
+---
+
+## Logotip (`components/ui/Logo.tsx`)
+
+`/public`ga haqiqiy logotip fayllari (`logo.svg`, `logo.png`,
+`logo-teskari.png`, `logo-{512,192,180,64,32}.png`, `favicon.ico`,
+`og-image.png`) qo'shilgandan keyin butun loyihaga ulandi.
+
+- **`components/ui/Logo.tsx`** — yagona logotip komponenti (`size`:
+  sm/md/lg/xl, `variant`: rangli/oq, `withText`, `priority`). `variant`
+  ikkita TAYYOR faylni almashtiradi (`/logo.svg` yoki `/logo-teskari.png`)
+  — SVG'ning `currentColor`i faqat inline holatda ishlaydi, `next/image`
+  esa uni tashqi rasm sifatida yuklaydi (DOM'ga inline qilinmaydi), shu
+  sababli ikkita alohida fayl orasida almashtirish orqali rang farqi
+  ta'minlanadi. `withText`dagi "ODIL SCHOOL" matni — Montserrat SemiBold
+  (`app/layout.tsx`da `--font-montserrat`), rangi `variant="oq"`da oq/och
+  (aks holda to'q fonda ko'rinmay qolardi), aks holda `theme.colors.primary`.
+  Bosilganda "tashqi" `/` ga o'tadi (middleware har ikkala domenda ham
+  o'z bosh sahifasiga rewrite qiladi).
+- **Qo'yilgan joylar:** talaba Dashboard sarlavhasi (`app/talaba/page.tsx`,
+  md+matn, priority), `/menyu` sarlavhasi (sm+matn, priority), kirish
+  kodi klaviaturasi (`components/student/kirish-klaviatura.tsx`, xl+matn,
+  priority, sarlavha ustida), admin nav (`components/admin/admin-nav.tsx`,
+  sm+matn, chap tomonda — bu loyihada "yon panel" emas, gorizontal yuqori
+  panel, shuning uchun shu yerga qo'yildi), admin kirish sahifasi (lg+matn,
+  kartadan tepada — ilgari shu yerda "Odil School — ..." matni bor edi,
+  endi shu matn logotip bilan ustma-ust tushmasligi uchun qisqartirildi),
+  ildiz fallback sahifa (`app/page.tsx`, middleware ishlamay qolgan
+  holat uchun) va yangi **Footer** (`components/ui/Footer.tsx`, to'q fon,
+  `variant="oq"`, `app/talaba/layout.tsx`ning oxiriga qo'shildi).
+- **Bo'sh holat/yuklanish:** `components/ui/YuklanmoqdaEkrani.tsx` —
+  logotip 20% shaffoflik + "nafas olish" animatsiyasi (`.logo-nafas`,
+  `app/globals.css`, `prefers-reduced-motion` hurmat qilinadi) —
+  `app/talaba/loading.tsx` va `app/admin/loading.tsx` (Next.js marshrut
+  segmenti yuklanish konvensiyasi) orqali ulandi. Mavjud Sherbek-asosli
+  "bo'sh holat" xabarlari (masalan Dashboard'dagi "Bu hafta hali XP
+  to'plangani yo'q") ataylab o'zgartirilmadi — ikkita personaj/logotip bir
+  joyda raqobatlashib ko'rinishni buzmasligi uchun.
+- **PDF hisobotlar** (`lib/pdf/documents/SinfNatijalari.tsx`,
+  `OquvchiTabeli.tsx`): sarlavhada `maktabNomi` matni yonida
+  `/logo-64.png` (`lib/pdf/logo-yoli.ts` — `lib/pdf/shrift.ts`dagi bilan
+  bir xil `path.join(process.cwd(), "public", ...)` pattern, chunki
+  react-pdf serverda ishlaydi). `KirishKodlari.tsx`ga (kirish kodi
+  kartochkalari, sahifada 8 tadan) ataylab qo'shilmadi — bu "hisobot
+  sarlavhasi" emas, kesish uchun mo'ljallangan kichik kartochkalar
+  to'ri, har biriga logotip qo'yish view chalkashtirar edi.
+- **Metadata** (`app/layout.tsx`): `title` shabloni endi `"%s · Odil
+  School"` (ilgari `"%s | Odil School"` edi — SEO ishi bilan boshlangan,
+  shu bosqichda yangi nusxaga moslashtirildi), `icons.apple`, `manifest:
+  "/manifest.json"`, `viewport.themeColor` (`theme.colors.primary`dan).
+- **PWA manifest almashtirildi:** eski `app/manifest.ts` (dinamik,
+  `/manifest.webmanifest`da, "OS" harflari bilan runtime'da generatsiya
+  qilingan ikonkalar — `app/icons/192|512/route.tsx`) butunlay
+  o'chirildi, ular o'rniga statik `public/manifest.json` (haqiqiy
+  `logo-192.png`/`logo-512.png` bilan) ulandi. Shu bilan birga
+  `app/opengraph-image.tsx` (SEO ishida runtime OG rasm generatori)
+  ham o'chirildi — endi haqiqiy `/public/og-image.png` ishlatiladi.
+  `middleware.ts`dagi endi keraksiz `/icons` va `/opengraph-image`
+  istisnolari ham tozalab olib tashlandi.
+- **Topilgan va tuzatilgan bug:** `app/favicon.ico` (loyiha birinchi
+  marta yaratilganda Next.js o'zi qo'ygan standart fayl) yangi qo'shilgan
+  `public/favicon.ico` bilan to'qnashib, **har qanday** `/favicon.ico`
+  so'rovini 500 xato bilan qaytarayotgan edi ("conflicting public file
+  and page file"). Eski `app/favicon.ico` o'chirildi.
+- **Loyihaga tegishli, lekin bu ishga aloqasi yo'q topilma:** `/public/
+  personajlar/` papkasida haqiqiy Sherbek, fan va nishon rasmlari
+  (`.png`/`.webp`) allaqachon qo'shilgan ekan (git tomonidan kuzatilmagan
+  holda) — bular hozircha ulanmagan, chunki bu so'rov faqat logotip haqida
+  edi. Agar xohlasangiz, keyingi safar shu rasmlarni ham
+  `Sherbek`/fan-personajlari komponentlariga ulab beraman.

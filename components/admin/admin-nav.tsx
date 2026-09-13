@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { ChiqishTugmasi } from "@/components/admin/chiqish-tugmasi";
+import { Logo } from "@/components/ui/Logo";
 import type { FoydalanuvchiRoli } from "@/lib/auth/admin";
 
 const HAMMA_UCHUN_BOLIMLAR = [
@@ -38,8 +39,9 @@ export function AdminNav({
 
   return (
     <header className="border-b bg-background">
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3">
-        <nav className="flex flex-wrap items-center gap-1">
+      <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-4 px-6 py-3">
+        <Logo size="sm" withText className="mr-2" />
+        <nav className="flex flex-1 flex-wrap items-center gap-1">
           {bolimlar.map((bolim) => (
             <Link
               key={bolim.href}

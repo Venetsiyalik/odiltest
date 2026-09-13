@@ -22,17 +22,12 @@ export function middleware(request: NextRequest) {
   // (kengaytmali oxirgi segment — masalan .ico, .xlsx, .png) tegilmaydi.
   // Aks holda masalan /favicon.ico yoki /robots.txt kabi fayllar ham
   // /admin yoki /talaba ostiga "rewrite" qilinib, 404 bo'lib qolar edi.
-  // /icons va /opengraph-image — Next.js fayl konvensiyalari
-  // (app/icons/*/route.tsx, app/opengraph-image.tsx), kengaytmasiz URL
-  // bilan xizmat qiladi, shu sababli istisno qilinadi.
   // /dizayn — ichki dizayn tizimi demo sahifasi (REDIZAYN.md), o'quvchi
   // yoki admin tomoniga tegishli emas, shuning uchun ikkala domenda ham
   // rewrite qilinmay to'g'ridan-to'g'ri ochiladi.
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
-    pathname.startsWith("/icons") ||
-    pathname.startsWith("/opengraph-image") ||
     pathname.startsWith("/dizayn") ||
     /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {

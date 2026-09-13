@@ -3,6 +3,7 @@ import Link from "next/link";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { TalabaChiqishTugmasi } from "@/components/student/talaba-chiqish-tugmasi";
 import { SinfRejimiTugmasi } from "@/components/student/sinf-rejimi-tugmasi";
+import { Logo } from "@/components/ui/Logo";
 import { uz } from "@/lib/i18n/uz";
 
 const KARTALAR = [
@@ -17,7 +18,8 @@ export default async function MenyuPage() {
 
   return (
     <main className="flex min-h-screen flex-col gap-10 p-8">
-      <header className="flex items-center justify-between">
+      <header className="flex items-center justify-between gap-4">
+        <Logo size="sm" withText priority />
         <p className="text-2xl font-semibold">
           {oquvchi.ismFamiliya} · {oquvchi.sinfNomi} sinf
         </p>

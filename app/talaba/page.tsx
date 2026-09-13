@@ -5,6 +5,7 @@ import { oquvchiHolatiniOl, sinfReytinginiOl } from "@/lib/redizayn/gamifikatsiy
 import { AVATARLAR } from "@/lib/redizayn/avatarlar-royxati";
 import { theme } from "@/lib/theme";
 import { saytUrliniOl } from "@/lib/utils/site-url";
+import { Logo } from "@/components/ui/Logo";
 import { Karta } from "@/components/redizayn/karta";
 import { Sherbek } from "@/components/redizayn/sherbek";
 import { Belgi } from "@/components/redizayn/belgi";
@@ -103,10 +104,8 @@ export default async function DashboardSahifasi() {
           <div className="flex items-center gap-4">
             <Sherbek holat="salom" size="lg" />
             <div>
-              <h1 className="text-[36px] font-extrabold sm:text-[48px]" style={{ color: theme.colors.primary }}>
-                Odil School bilim platformasi
-              </h1>
-              <p className="text-[18px] sm:text-[20px]" style={{ color: theme.colors.muted }}>
+              <Logo size="md" withText priority />
+              <p className="mt-1 text-[18px] sm:text-[20px]" style={{ color: theme.colors.muted }}>
                 Barcha fan va mavzular — hammaga ochiq, kodsiz
               </p>
             </div>

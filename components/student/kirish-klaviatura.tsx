@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Logo } from "@/components/ui/Logo";
 import { uz } from "@/lib/i18n/uz";
 
 const KOD_UZUNLIGI = 6;
@@ -108,6 +109,7 @@ export function KirishKlaviaturasi() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center gap-10 p-8">
+      <Logo size="xl" withText priority />
       <h1 className="text-center text-3xl font-semibold sm:text-4xl">
         {uz.talaba.kirish.sarlavha}
       </h1>

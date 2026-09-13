@@ -4,6 +4,7 @@ import { darajalarStatistikasiniOl, qidiruvIndeksiniOl } from "@/lib/redizayn/da
 import { oquvchiHolatiniOl, sinfReytinginiOl } from "@/lib/redizayn/gamifikatsiya";
 import { AVATARLAR } from "@/lib/redizayn/avatarlar-royxati";
 import { theme } from "@/lib/theme";
+import { saytUrliniOl } from "@/lib/utils/site-url";
 import { Karta } from "@/components/redizayn/karta";
 import { Sherbek } from "@/components/redizayn/sherbek";
 import { Belgi } from "@/components/redizayn/belgi";
@@ -34,6 +35,23 @@ export default async function DashboardSahifasi() {
         fontFamily: "var(--font-nunito), sans-serif",
       }}
     >
+      {/* Google/qidiruv tizimlari uchun tuzilgan ma'lumot (JSON-LD) — statik,
+          serverda tuzilgan JSON, foydalanuvchi kiritmasi emas, shuning uchun
+          dangerouslySetInnerHTML xavfsiz (loyihaning Markdown-kontent uchun
+          bu usuldan qochish qoidasi bu yerga taalluqli emas). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "EducationalOrganization",
+            name: "Odil School",
+            url: saytUrliniOl(),
+            description:
+              "5-11-sinf o'quvchilari uchun bepul onlayn darslar, mashqlar va testlar.",
+          }),
+        }}
+      />
       <div className="mx-auto flex max-w-5xl flex-col gap-10 p-6 pb-16 sm:p-8">
         {oquvchi && holat && (
           <div

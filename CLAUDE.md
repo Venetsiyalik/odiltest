@@ -679,3 +679,57 @@ REDIZAYN.md'ning barcha 7 bosqichi (dizayn tizimi, dashboard, o'quv
 materiallari, prezentatsiya ko'ruvchi, gamifikatsiya, mashq/o'rganish
 qayta dizayni, rasmiy test qayta dizayni) shu bilan to'liq yakunlandi —
 asl `TEXNIK-TOPSHIRIQ.md`ning 7 bosqichi ustiga qo'shilgan holda.
+
+---
+
+## SEO (Google qidiruv tizimida ko'rinish)
+
+Ikkala hujjat (asl texnik topshiriq va REDIZAYN.md) tugagandan keyin,
+foydalanuvchi Google Search Console'da sayt ro'yxatdan o'tkazgach, tezroq
+va to'g'ri indekslanishi uchun qo'shildi (alohida bosqich emas — ikkala
+rasmiy hujjatdan tashqari, operatsion so'rov).
+
+- `lib/utils/site-url.ts` — `NEXT_PUBLIC_SITE_URL`ni o'qiydigan yagona
+  yordamchi (`saytUrliniOl()`); sozlanmagan yoki `localhost` bo'lsa
+  `https://odiltest.uz`ga tushadi — sitemap/robots/OG hech qachon
+  `localhost` bilan generatsiya bo'lib qolmasligi uchun.
+- `app/robots.ts` va `app/sitemap.ts` — ikkalasi ham `headers()` orqali
+  `Host` sarlavhasini o'qib, `admin.` prefiksli domenlarda mos ravishda
+  to'liq `disallow` va bo'sh sitemap qaytaradi (admin panel hech qachon
+  indekslanmasin). Asosiy domenda sitemap `lib/redizayn/dashboard.ts`dagi
+  `darajalarStatistikasiniOl()`/`qidiruvIndeksiniOl()` orqali **haqiqiy
+  bazadan** generatsiya qilinadi (`/`, mavjud `/sinf/[daraja]`,
+  `/sinf/[daraja]/[fanId]`, `.../[mavzuId]` — faqat kontenti bor
+  sahifalar), robots faqat kirish talab qiladigan yo'llarni
+  (`/kirish`, `/menyu`, `/mashq`, `/organish`, `/test`, `/natijalar`,
+  `/urinish`, `/nishonlar`, `/dizayn`, `/offline`, `/api`) disallow qiladi.
+- `app/admin/layout.tsx`ga `robots: { index: false, follow: false }`
+  metadata qo'shildi — `robots.txt`dagi to'liq disallow ustiga ikkinchi
+  qatlam himoya (login sahifasi ham qidiruvda chiqmasin).
+- `app/layout.tsx` — `metadataBase`, to'liq Open Graph/Twitter card
+  metadata (`openGraph`, `twitter`) qo'shildi; `app/opengraph-image.tsx`
+  (`next/og`, `app/icons/*/route.tsx`dagi patternga o'xshash) ijtimoiy
+  tarmoqlarda ulashilganda ko'rinadigan rasmni runtime'da generatsiya
+  qiladi (tema ranglari — `theme.colors.primary`/`accent`).
+- Bosh sahifaga (`app/talaba/page.tsx`) `EducationalOrganization`
+  JSON-LD tuzilgan ma'lumoti qo'shildi (`dangerouslySetInnerHTML`
+  — bu yerda xavfsiz, chunki kontent butunlay statik/serverda tuzilgan
+  JSON, foydalanuvchi kiritmasi emas; loyihaning Markdown-kontent uchun
+  bu usuldan qochish qoidasi bunga taalluqli emas).
+- **Topilgan va tuzatilgan bug (`middleware.ts`):** `/opengraph-image`
+  (Next.js fayl konvensiyasi) kengaytmasiz URL bilan xizmat qiladi —
+  xuddi `/icons/*` kabi — lekin middleware buni hisobga olmagani uchun
+  `/talaba/opengraph-image`ga noto'g'ri rewrite qilib 404 qaytarayotgan
+  edi (OG rasmi ijtimoiy tarmoqlarda umuman ko'rinmasdi). Brauzerda sinab
+  ko'rib topildi, `/opengraph-image` ham `/icons` bilan bir qatorda
+  istisnolar ro'yxatiga qo'shildi.
+- **Qo'lda qilinadigan qadam (men bajara olmayman — foydalanuvchining
+  Search Console hisobiga kirish kerak):** agar Google Search Console
+  saytni HTML meta teg orqali tasdiqlashni so'rasa (DNS yoki domen
+  provayder orqali tasdiqlangan bo'lsa bu qadam kerak emas), o'sha
+  tasdiqlash kodini `app/layout.tsx`dagi `metadata.verification.google`
+  maydoniga qo'shish kerak — kodni bergan holda so'rasa qo'shib beriladi.
+  Shundan keyin Search Console'da "Sitemaps" bo'limiga
+  `https://odiltest.uz/sitemap.xml`ni qo'lda yuborish va bosh sahifani
+  "URL tekshiruvi" orqali "Indekslashni so'rash" tavsiya etiladi — bular
+  ham faqat Search Console interfeysida, qo'lda bajariladi.

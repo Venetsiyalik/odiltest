@@ -206,3 +206,23 @@
     display: none;
   }
 }
+
+/* Logotipning "nafas olish" animatsiyasi — bo'sh holat va yuklanish
+   ekranlarida (components/ui/YuklanmoqdaEkrani.tsx). */
+@keyframes logo-nafas {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.04);
+  }
+}
+.logo-nafas {
+  animation: logo-nafas 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .logo-nafas {
+    animation: none;
+  }
+}

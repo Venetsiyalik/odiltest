@@ -1,8 +1,17 @@
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, Image, StyleSheet } from "@react-pdf/renderer";
+import { PDF_LOGO_YOLI } from "@/lib/pdf/logo-yoli";
 
 const uslub = StyleSheet.create({
   sahifa: { fontFamily: "DejaVu Sans", fontSize: 10, padding: 32 },
-  maktabNomi: { fontSize: 16, fontWeight: "bold", marginBottom: 4 },
+  logoQatori: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
+    marginBottom: 4,
+  },
+  logotip: { width: 28, height: 28 },
+  maktabNomi: { fontSize: 16, fontWeight: "bold" },
   sarlavha: { fontSize: 11, marginBottom: 2 },
   subSarlavha: { fontSize: 9, color: "#555", marginBottom: 16 },
   jadval: { display: "flex", flexDirection: "column", marginBottom: 16 },
@@ -61,7 +70,13 @@ export function SinfNatijalariHisoboti({
   return (
     <Document>
       <Page size="A4" style={uslub.sahifa}>
-        <Text style={uslub.maktabNomi}>{maktabNomi}</Text>
+        <View style={uslub.logoQatori}>
+          {/* @react-pdf/renderer'ning o'z Image komponenti — HTML/next/image
+              emas, `alt` propi yo'q (jsx-a11y buni bilmaydi). */}
+          {/* eslint-disable-next-line jsx-a11y/alt-text */}
+          <Image src={PDF_LOGO_YOLI} style={uslub.logotip} />
+          <Text style={uslub.maktabNomi}>{maktabNomi}</Text>
+        </View>
         <Text style={uslub.sarlavha}>
           {fanNomi} fani · {sinfNomi} sinf · &quot;{testNomi}&quot;
         </Text>

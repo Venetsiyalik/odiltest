@@ -1,6 +1,7 @@
 import { IdleGuard } from "@/components/student/idle-guard";
 import { SwRegister } from "@/components/student/sw-register";
 import { SinfRejimiInit } from "@/components/student/sinf-rejimi-init";
+import { Footer } from "@/components/ui/Footer";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 
 export default async function TalabaLayout({
@@ -14,11 +15,12 @@ export default async function TalabaLayout({
   const oquvchi = await joriyOquvchiniOl();
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen flex-col bg-background text-foreground">
       <IdleGuard faolmi={Boolean(oquvchi)} />
       <SwRegister />
       <SinfRejimiInit />
-      {children}
+      <div className="flex-1">{children}</div>
+      <Footer />
     </div>
   );
 }

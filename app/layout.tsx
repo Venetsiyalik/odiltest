@@ -1,6 +1,7 @@
-import type { Metadata } from "next";
-import { Geist, Geist_Mono, Nunito } from "next/font/google";
+import type { Metadata, Viewport } from "next";
+import { Geist, Geist_Mono, Montserrat, Nunito } from "next/font/google";
 import { saytUrliniOl } from "@/lib/utils/site-url";
+import { theme } from "@/lib/theme";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -22,29 +23,42 @@ const nunito = Nunito({
   subsets: ["latin"],
 });
 
-const TAVSIF =
-  "Odil School — 5-11-sinf o'quvchilari uchun bepul onlayn darslar, mashqlar va testlar. Fanlarni mavzular bo'yicha o'rganing, bilimingizni sinab ko'ring.";
+// Faqat logotip yonidagi "ODIL SCHOOL" yozuvi uchun (components/ui/Logo.tsx).
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
+  subsets: ["latin"],
+  weight: ["600"],
+});
+
+const TAVSIF = "5-11-sinflar uchun o'quv materiallari, ma'ruzalar, prezentatsiyalar va testlar";
 
 export const metadata: Metadata = {
   metadataBase: new URL(saytUrliniOl()),
   title: {
-    default: "Odil School — bepul onlayn darslar va testlar",
-    template: "%s | Odil School",
+    default: "Odil School — bilim platformasi",
+    template: "%s · Odil School",
   },
   description: TAVSIF,
+  manifest: "/manifest.json",
+  icons: { icon: "/favicon.ico", apple: "/logo-180.png" },
   robots: { index: true, follow: true },
   openGraph: {
     type: "website",
     locale: "uz_UZ",
     siteName: "Odil School",
-    title: "Odil School — bepul onlayn darslar va testlar",
+    title: "Odil School — bilim platformasi",
     description: TAVSIF,
+    images: ["/og-image.png"],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Odil School — bepul onlayn darslar va testlar",
+    title: "Odil School — bilim platformasi",
     description: TAVSIF,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: theme.colors.primary,
 };
 
 export default function RootLayout({
@@ -55,7 +69,7 @@ export default function RootLayout({
   return (
     <html lang="uz">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${nunito.variable} ${montserrat.variable} antialiased`}
       >
         {children}
       </body>

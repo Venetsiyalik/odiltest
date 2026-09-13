@@ -22,9 +22,12 @@ export function middleware(request: NextRequest) {
   // (kengaytmali oxirgi segment — masalan .ico, .xlsx, .png) tegilmaydi.
   // Aks holda masalan /favicon.ico yoki /robots.txt kabi fayllar ham
   // /admin yoki /talaba ostiga "rewrite" qilinib, 404 bo'lib qolar edi.
+  // /icons — PWA manifest ikonkalari (app/icons/*/route.tsx, kengaytmasiz
+  // URL bilan xizmat qiladi) ham shu sababli istisno qilinadi.
   if (
     pathname.startsWith("/api") ||
     pathname.startsWith("/_next") ||
+    pathname.startsWith("/icons") ||
     /\.[a-zA-Z0-9]+$/.test(pathname)
   ) {
     return NextResponse.next();

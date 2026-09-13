@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
 import { fanlarniOl, sinflarniOl } from "@/lib/actions/spravochniklar";
 import { testlarniOl } from "@/lib/actions/testlar";
-import { natijalarniOl, engQiyinSavollarniOl } from "@/lib/actions/natijalar";
+import { natijalarniOl, engQiyinSavollarniOl, engSustMavzularniOl } from "@/lib/actions/natijalar";
 import { NatijalarClient } from "@/components/admin/natijalar-client";
 
 export default async function NatijalarPage() {
@@ -16,7 +16,11 @@ export default async function NatijalarPage() {
     natijalarniOl(),
   ]);
 
-  const qiyinSavollar = await engQiyinSavollarniOl(natijalar.map((n) => n.urinishId));
+  const urinishIdlar = natijalar.map((n) => n.urinishId);
+  const [qiyinSavollar, sustMavzular] = await Promise.all([
+    engQiyinSavollarniOl(urinishIdlar),
+    engSustMavzularniOl(urinishIdlar),
+  ]);
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 p-8">
@@ -24,6 +28,7 @@ export default async function NatijalarPage() {
       <NatijalarClient
         boshlangichNatijalar={natijalar}
         boshlangichQiyinSavollar={qiyinSavollar}
+        boshlangichSustMavzular={sustMavzular}
         fanlar={fanlar}
         sinflar={sinflar}
         testlar={testlar}

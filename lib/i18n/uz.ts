@@ -37,6 +37,8 @@ export const uz = {
       mashq: "Mashq qilish",
       testTopshirish: "Test topshirish",
       natijalarim: "Mening natijalarim",
+      sinfRejimiYoqish: "🔍 Sinf rejimi",
+      sinfRejimiOchirish: "🔍 Sinf rejimi (yoqilgan)",
     },
     test: {
       royxatSarlavha: "Test topshirish",
@@ -54,6 +56,7 @@ export const uz = {
       belgilash: "Keyin qaytaman",
       yakunlash: "Yakunlash",
       savolRaqami: (joriy: number, jami: number) => `Savol ${joriy}/${jami}`,
+      oflaynXabari: "Internet yo'q — javoblaringiz saqlanmoqda, ulanish tiklanganda yuboriladi",
     },
     organish: {
       nazariya: "Nazariya",

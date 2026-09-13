@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { TalabaChiqishTugmasi } from "@/components/student/talaba-chiqish-tugmasi";
+import { SinfRejimiTugmasi } from "@/components/student/sinf-rejimi-tugmasi";
 import { uz } from "@/lib/i18n/uz";
 
 const KARTALAR = [
@@ -36,12 +37,15 @@ export default async function MenyuPage() {
         ))}
       </div>
 
-      <Link
-        href="/natijalar"
-        className="mx-auto min-h-16 rounded-xl border-2 border-border px-8 py-4 text-xl font-medium active:bg-muted"
-      >
-        {uz.talaba.menyu.natijalarim}
-      </Link>
+      <div className="mx-auto flex flex-wrap items-center justify-center gap-3">
+        <Link
+          href="/natijalar"
+          className="min-h-16 rounded-xl border-2 border-border px-8 py-4 text-xl font-medium active:bg-muted"
+        >
+          {uz.talaba.menyu.natijalarim}
+        </Link>
+        <SinfRejimiTugmasi />
+      </div>
     </main>
   );
 }

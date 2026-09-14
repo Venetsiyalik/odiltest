@@ -4,10 +4,12 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { excelFayliniParseQilish, excelShablonYarat } from "@/lib/parsers/excel";
 import { wordFayliniParseQilish } from "@/lib/parsers/word";
+import { pdfFayliniParseQilish } from "@/lib/parsers/pdf";
 
 const MAX_FAYL_HAJMI = 10 * 1024 * 1024; // 10 MB (9-band)
 const RUXSAT_ETILGAN_EXCEL_KENGAYTMALARI = [".xlsx", ".xls", ".csv"];
 const RUXSAT_ETILGAN_WORD_KENGAYTMALARI = [".docx"];
+const RUXSAT_ETILGAN_PDF_KENGAYTMALARI = [".pdf"];
 
 export type ImportHolati = "tayyor" | "ogohlantirish" | "xato";
 
@@ -208,6 +210,7 @@ export async function wordFayliniTahlilQilish(
   fanId: number,
   sinfId: number,
   mavzuId: number | null,
+  agarJavobYoqBolsaA = false,
 ): Promise<ImportTahliliNatijasi> {
   const fayl = formData.get("fayl");
   if (!(fayl instanceof File)) return { xato: "Fayl topilmadi" };
@@ -230,7 +233,7 @@ export async function wordFayliniTahlilQilish(
   const buffer = Buffer.from(await fayl.arrayBuffer());
   let xomSavollar;
   try {
-    xomSavollar = await wordFayliniParseQilish(buffer);
+    xomSavollar = await wordFayliniParseQilish(buffer, agarJavobYoqBolsaA);
   } catch {
     return { xato: "Faylni o'qib bo'lmadi — .docx formatida ekanligini tekshiring" };
   }
@@ -242,10 +245,82 @@ export async function wordFayliniTahlilQilish(
     };
   }
 
+  return {
+    qatorlar: await xomSavollarniQatorlargaOtkazish(xomSavollar, fan.nomi, sinf.nomi, mavzu?.nomi ?? ""),
+  };
+}
+
+// ----------------------------------------------------------------------------
+// PDF
+// ----------------------------------------------------------------------------
+
+export async function pdfFayliniTahlilQilish(
+  formData: FormData,
+  fanId: number,
+  sinfId: number,
+  mavzuId: number | null,
+  agarJavobYoqBolsaA = false,
+): Promise<ImportTahliliNatijasi> {
+  const fayl = formData.get("fayl");
+  if (!(fayl instanceof File)) return { xato: "Fayl topilmadi" };
+  if (fayl.size > MAX_FAYL_HAJMI) return { xato: "Fayl hajmi 10 MB dan katta bo'lmasin" };
+  if (!kengaytmaTogrimi(fayl.name, RUXSAT_ETILGAN_PDF_KENGAYTMALARI)) {
+    return { xato: "Faqat .pdf fayl qabul qilinadi" };
+  }
+
+  const supabase = await createClient();
+  const [{ data: fan }, { data: sinf }, { data: mavzu }] = await Promise.all([
+    supabase.from("fanlar").select("nomi").eq("id", fanId).single(),
+    supabase.from("sinflar").select("nomi").eq("id", sinfId).single(),
+    mavzuId
+      ? supabase.from("mavzular").select("nomi").eq("id", mavzuId).single()
+      : Promise.resolve({ data: null }),
+  ]);
+
+  if (!fan || !sinf) return { xato: "Fan yoki sinf topilmadi" };
+
+  const buffer = Buffer.from(await fayl.arrayBuffer());
+  let natija;
+  try {
+    natija = await pdfFayliniParseQilish(buffer, agarJavobYoqBolsaA);
+  } catch {
+    return { xato: "Faylni o'qib bo'lmadi — .pdf formatida ekanligini tekshiring" };
+  }
+
+  if (natija.matnTopilmadi) {
+    return {
+      xato:
+        "Bu PDF da matn yo'q (skanerdan olingan bo'lishi mumkin). Iltimos, Word fayl yuklang yoki matnli PDF saqlang",
+    };
+  }
+
+  if (natija.savollar.length === 0) {
+    return {
+      xato:
+        "Faylda hech qanday savol topilmadi — format \"1. Savol matni\" bilan boshlanishi kerak",
+    };
+  }
+
+  return {
+    qatorlar: await xomSavollarniQatorlargaOtkazish(
+      natija.savollar,
+      fan.nomi,
+      sinf.nomi,
+      mavzu?.nomi ?? "",
+    ),
+  };
+}
+
+async function xomSavollarniQatorlargaOtkazish(
+  xomSavollar: Awaited<ReturnType<typeof wordFayliniParseQilish>>,
+  fanNomi: string,
+  sinfNomi: string,
+  mavzuNomi: string,
+): Promise<ImportQatori[]> {
   const takrorlar = await mavjudTakrorlarniTopish(xomSavollar.map((q) => q.matn));
   const shuFayldagiMatnlar = new Set<string>();
 
-  const qatorlar: ImportQatori[] = xomSavollar.map((xom) => {
+  return xomSavollar.map((xom) => {
     let xabar = xom.xato;
 
     if (!xabar) {
@@ -266,15 +341,13 @@ export async function wordFayliniTahlilQilish(
       variantC: xom.variantC ?? "",
       variantD: xom.variantD ?? "",
       togriJavob: xom.togriJavob ?? "",
-      fanNomi: fan.nomi,
-      sinfNomi: sinf.nomi,
-      mavzuNomi: mavzu?.nomi ?? "",
+      fanNomi,
+      sinfNomi,
+      mavzuNomi,
       qiyinlik: 1,
-      izoh: "",
+      izoh: xom.izoh ?? "",
     };
   });
-
-  return { qatorlar };
 }
 
 // ----------------------------------------------------------------------------
@@ -358,7 +431,7 @@ async function mavzuIdIniOlish(
 }
 
 export async function importniTasdiqlash(
-  turi: "excel" | "word",
+  turi: "excel" | "word" | "pdf",
   faylNomi: string,
   jamiSavolSoni: number,
   tasdiqlanganQatorlar: ImportQatori[],

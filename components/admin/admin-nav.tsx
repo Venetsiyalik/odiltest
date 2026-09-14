@@ -12,6 +12,7 @@ const HAMMA_UCHUN_BOLIMLAR = [
   { href: "/spravochniklar", nomi: "Fan/Sinf/Mavzu" },
   { href: "/savollar", nomi: "Savollar" },
   { href: "/testlar", nomi: "Testlar" },
+  { href: "/smart-test", nomi: "⚡ Smart Test" },
   { href: "/oquvchilar", nomi: "O'quvchilar" },
   { href: "/materiallar", nomi: "Materiallar" },
   { href: "/kontent", nomi: "Kontent (Dashboard)" },

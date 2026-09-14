@@ -19,6 +19,8 @@ export interface Savol {
   togri_javob: "A" | "B" | "C" | "D";
   qiyinlik: number;
   izoh: string | null;
+  izoh_qisqa: string | null;
+  izoh_rasm_url: string | null;
   faol: boolean;
   fan_id: number;
   sinf_id: number;
@@ -41,7 +43,7 @@ export async function savollarniOl(filtr: SavollarFiltri = {}): Promise<Savol[]>
   let so_rov = supabase
     .from("savollar")
     .select(
-      "id, matn, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob, qiyinlik, izoh, faol, fan_id, sinf_id, mavzu_id, fanlar(nomi), sinflar(nomi), mavzular(nomi)",
+      "id, matn, rasm_url, variant_a, variant_b, variant_c, variant_d, togri_javob, qiyinlik, izoh, izoh_qisqa, izoh_rasm_url, faol, fan_id, sinf_id, mavzu_id, fanlar(nomi), sinflar(nomi), mavzular(nomi)",
     )
     .order("created_at", { ascending: false })
     .limit(300);
@@ -105,6 +107,8 @@ const savolSxemasi = z.object({
   togriJavob: z.enum(["A", "B", "C", "D"]),
   qiyinlik: z.number().int().min(1).max(5),
   izoh: z.string().trim().max(1000).nullable().optional(),
+  izohQisqa: z.string().trim().max(300).nullable().optional(),
+  izohRasmUrl: z.string().trim().url().nullable().optional(),
   rasmUrl: z.string().trim().url().nullable().optional(),
 });
 
@@ -131,6 +135,8 @@ export async function savolQoshish(qiymatlar: SavolQiymatlari): Promise<ActionNa
     togri_javob: tekshiruv.data.togriJavob,
     qiyinlik: tekshiruv.data.qiyinlik,
     izoh: tekshiruv.data.izoh || null,
+    izoh_qisqa: tekshiruv.data.izohQisqa || null,
+    izoh_rasm_url: tekshiruv.data.izohRasmUrl || null,
     rasm_url: tekshiruv.data.rasmUrl || null,
     created_by: user?.id ?? null,
   });
@@ -160,6 +166,8 @@ export async function savolTahrirlash(id: number, qiymatlar: SavolQiymatlari): P
       togri_javob: tekshiruv.data.togriJavob,
       qiyinlik: tekshiruv.data.qiyinlik,
       izoh: tekshiruv.data.izoh || null,
+      izoh_qisqa: tekshiruv.data.izohQisqa || null,
+      izoh_rasm_url: tekshiruv.data.izohRasmUrl || null,
       rasm_url: tekshiruv.data.rasmUrl || null,
     })
     .eq("id", id);

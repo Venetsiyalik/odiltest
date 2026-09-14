@@ -27,6 +27,16 @@ export const theme = {
     tarix: "#C9992E",
     geografiya: "#2EC4B6",
   },
+  /**
+   * Smart Test moduli uchun (smart-test.md 9-bo'lim) — yorqin, o'yinsimon
+   * fon, qolgan platformadan ataylab ajralib turadi (rasmiy testning
+   * "sokin, jiddiy" uslubiga qarama-qarshi, 1-bo'lim jadvali).
+   */
+  smartTest: {
+    bg: "#2D1B5E",
+    gradientBoshi: "#9B5DE5",
+    gradientOxiri: "#4A7BF7",
+  },
   radius: { sm: 12, md: 20, lg: 28, full: 999 },
   shadow: {
     card: "0 4px 0 rgba(0,0,0,0.10)",

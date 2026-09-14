@@ -1000,3 +1000,132 @@ shaffof fon) qo'shilgandan keyin ulandi.
   alohida emoji-ikonkasi (`nishonlar-royxati.ts`dagi 12 xil) ataylab
   o'zgartirilmadi — faqat bitta umumiy nishon-ikonkasi bilan almashtirish
   ularning bir-biridan ajralib turishini yo'qotgan bo'lardi.
+
+---
+
+## Smart Test moduli (`smart-test.md`, `feat/smart-test`)
+
+Asosiy ikki hujjatdan mustaqil, yangi qo'shimcha modul — o'qituvchi
+boshqaradigan, butun sinf birga yechadigan, baholanmaydigan "sinf bilan
+birga o'rganish" rejimi. To'liq matn: `smart-test.md`.
+
+**Muhim arxitektura qarori — hujjatning o'zidan chetga chiqilgan joy:**
+hujjat Smart Testni talaba tomonining kodsiz/ochiq Dashboard'idan
+("Kod so'ralmaydi — o'qituvchi darhol boshlaydi") ishga tushirishni va
+`GET /api/smart-test/savollar`ni to'g'ri javob bilan birga hech qanday
+autentifikatsiyasiz qaytarishni taklif qilgan edi. Bu **CLAUDE.md
+xavfsizlik qoidasi #1ga** ("savollar.togri_javob hech qachon klientga
+yuborilmaydi" — "buzilmaydi" deb belgilangan) to'g'ridan-to'g'ri zid,
+chunki Smart Test aynan rasmiy testlarda ham ishlatiladigan bitta umumiy
+`savollar` jadvalidan o'qiydi — agar bitta savol ikkala rejimda ham
+ishlatilsa, uning javobi butunlay ochilib qolar edi. Foydalanuvchi bilan
+kelishilgan qaror: Smart Test **butunlay `/admin` panelida**, mavjud
+admin/o'qituvchi login orqali ishlaydi (`/admin/smart-test`,
+`/admin/smart-test/sessiya` — "tashqi" yo'l sifatida `/smart-test`);
+`GET` Route Handler o'rniga oddiy `"use server"` Server Action
+(`lib/actions/smart-test.ts: smartTestSavollariniOl()`) ishlatiladi va
+u `joriyFoydalanuvchiniOl()` bilan tekshiradi + mavjud `savollar` RLS
+siyosati (`is_oqituvchi_biriktirilgan`) orqali tabiiy ravishda
+cheklanadi — o'qituvchi faqat o'ziga biriktirilgan fan+sinf savollarini
+Smart Testda ham ko'radi. Dashboard kartasi ham talaba tomonida emas,
+`/admin/dashboard`da (gradient banner) va `AdminNav`da joylashgan.
+
+- **Migratsiya** (`0008_smart_test.sql`): `savollar`ga `izoh_qisqa`
+  ("Eslab qoling" qisqa xulosa) va `izoh_rasm_url` — ikkalasi ham
+  ixtiyoriy, mavjud qatorlarga ta'sir qilmaydi. Yangi `smart_sessiyalar`
+  jurnal jadvali (o'quvchi ma'lumoti umuman yozilmaydi — faqat
+  fan/daraja/mavzular/savol-soni/vaqt-rejimi statistikasi). `importlar`
+  jadvalining `turi` CHECK cheklovi `'pdf'` qiymatini ham qabul qiladigan
+  qilib kengaytirildi (quyiga qarang).
+- **Word/PDF import kengaytirildi** (mavjud savollar import oqimining
+  bir qismi, alohida ekran emas): `lib/parsers/savol-matni.ts` — Word
+  (`word.ts`) va yangi PDF (`pdf.ts`, `pdfjs-dist/legacy/build/pdf.mjs`
+  orqali server tomonda matn ajratib oladi — standalone skript bilan
+  tasdiqlangan, Node worker'siz ham ishlaydi) uchun umumiy qator-tahlilchi.
+  Yangi imkoniyatlar: **ko'p qatorli `Izoh:` qatorini** aniqlaydi (keyingi
+  savol raqamigacha davom etadi — ilgari `word.ts` Izohni umuman
+  o'qimasdi), `Javob`/`Javobi`/`To'g'ri javob`/`Ответ` va
+  `Izoh`/`Tushuntirish`/`Sabab`/`Nega`/`Пояснение` prefikslarini tanib
+  oladi, apostrof shakllarini (`'`/`ʻ`/`` ` ``/`'`) bittaga keltiradi.
+  Admin import ekraniga (`components/admin/import-hujjat-client.tsx` —
+  eski `import-word-client.tsx` o'rniga, endi Word VA PDF ikkalasiga ham
+  xizmat qiladi) yangi **"Javob:" qatori bo'lmasa, A ni to'g'ri deb
+  hisobla** belgisi va **PDF** tabi qo'shildi (skanerdan olingan,
+  matnsiz PDF aniq xabar bilan rad etiladi — 7.4-bo'lim). Ko'rib chiqish
+  jadvaliga (`import-natija-jadvali.tsx`) har bir qator uchun "✓ N
+  belgi" / "⚠️ izoh yo'q" ustuni va "N ta savolda izoh yo'q" umumiy
+  ogohlantirish qo'shildi. Standalone skriptlar bilan tasdiqlangan:
+  ko'p qatorli Izoh to'g'ri birlashtiriladi, "Javob:" yo'q + belgi
+  yoqilgan holatda A to'g'ri deb olinadi, "To'g'ri javob: C" (ikki so'zli
+  prefiks) ham tanib olinadi.
+- **`components/admin/savol-form.tsx`** — `izoh_qisqa` va `izoh_rasm_url`
+  uchun yangi ixtiyoriy maydonlar qo'shildi (qisqa xulosa matni + mavjud
+  "Rasm" maydoni bilan bir xil `savol-rasmlari` bucket'iga alohida
+  `izohlar/` prefiksi bilan yuklash).
+- **Sozlash ekrani** (`/admin/smart-test`,
+  `components/admin/smart-test-sozlash.tsx`): fan + daraja (5–11,
+  `lib/redizayn/daraja.ts`dagi mavjud abstraksiya qayta ishlatildi) +
+  ko'p tanlovli mavzu (checkbox ro'yxati — Base UI'ning ko'p tanlovli
+  Select'i yo'q, shuning uchun oddiy checkbox guruhi ishlatildi) +
+  savollar soni (10/15/20/Hammasi) + vaqt rejimi + tartib. Tanlov
+  o'zgarganda **jonli** (debounce 300ms) `smartTestSavollariniOl()`
+  chaqirilib, "N ta izohli savol topildi" ko'rsatiladi (3-bo'limdagi
+  "Bu mavzuda izohli savol N ta. Davom etamizmi?" talabini alohida
+  tasdiqlash oynasi o'rniga oldindan ko'rsatish orqali hal qiladi —
+  o'qituvchi BOSHLASH bosishdan oldin allaqachon ko'radi, natijada
+  BOSHLASH bosilganda qo'shimcha so'rov kerak emas, sessiya darhol
+  boshlanadi). Sozlamalar (savollar payload'isiz) `localStorage`da,
+  haqiqiy savollar (izoh va to'g'ri javob bilan) `sessionStorage`da
+  saqlanadi (`SMART_TEST_SESSIYA_KALITI`) — 10-bo'lim talabiga mos.
+- **Sessiya ekrani** (`/admin/smart-test/sessiya`,
+  `components/admin/smart-test-sessiya.tsx` + katta ekran 2×2 variant
+  to'ri `smart-test-variantlar.tsx`): savol → to'g'ri javobni ko'rsatish
+  → (izoh bo'lsa) tushuntirish → keyingi savol bosqichlari; `Space`/
+  `Enter` shu ketma-ketlikni bitta tugma bilan boshqaradi, `←`/`→` savol
+  navigatsiyasi, `P` taymer pauzasi, `1`–`4` ixtiyoriy "sinf tanlovi"
+  belgisi (4.4-bo'lim), `Esc`/`✕` tasdiqlash bilan chiqish. Vaqt rejimida
+  taymer tugaganda **avtomatik ochilmaydi**, shunchaki to'xtaydi
+  (4.2-bo'lim talabi). Variant tartibi (A/B/C/D qaysi rangda chiqishi)
+  mavjud `lib/talaba/aralashtirish.ts: variantTartibiniYaratish()` bilan
+  sessiya yuklanganda bir marta hisoblanadi va sessiya davomida
+  o'zgarmaydi. Wake Lock va to'liq ekran — `prezentatsiya-korish.tsx`dagi
+  bilan bir xil pattern. Sessiya tugaganda (oxirgi savoldan keyin
+  avtomatik yoki ✕ orqali qo'lda) `smartTestSessiyasiniYozish()` bir
+  martalik statistika yozuvini yozadi va yakun ekrani ("N savol ko'rib
+  chiqildi · Fan · Daraja-sinf" + [Yangi sessiya]/[Dashboardga])
+  ko'rsatiladi.
+  - **Topilgan va tuzatilgan bug (React "setState during render"):**
+    `keyingiSavol()` oxirgi savoldan keyin `yakunlash()`ni (bir nechta
+    boshqa state'ni yangilaydigan funksiya) `setJoriyIndeks`ning
+    YANGILOVCHI FUNKSIYASI ICHIDA chaqirar edi — bu React'ning "Cannot
+    update a component while rendering a different component" xatosiga
+    olib kelardi (brauzer konsolida va Next.js dev overlay'ida "1 Issue"
+    belgisi orqali sinab ko'rishda topildi, aynan sessiyaning oxirgi
+    savolidan keyingi "Keyingi savol" bosilganda). Tuzatish:
+    `joriyIndeks`ni to'g'ridan-to'g'ri (yopilish orqali) o'qib, oxirgi
+    savolmi-yo'qmi avval tekshiriladi, keyin FAQAT bitta state
+    o'zgartiruvchi chaqiriladi (`yakunlash()` YOKI `setJoriyIndeks`,
+    ikkalasi birga emas). Tuzatilgandan keyin butun sessiya oqimi
+    (bir nechta marta, ✕ orqali qo'lda chiqish va oxirgi savoldan keyin
+    avtomatik tugash — ikkalasi ham) qayta sinovdan o'tkazilib,
+    konsolda xato yo'qligi tasdiqlandi.
+  - **Topilgan va tuzatilgan bug (ko'rinmas tugma):** tushuntirish
+    ekranidagi "← Savolga qaytish" tugmasi `rang="outline"` +
+    qo'lda qo'shilgan `className="!text-white"` bilan chaqirilgan edi —
+    lekin `Tugma`ning "outline" varianti oq FON (shaffof emas) beradi,
+    shuning uchun oq matn oq fonda butunlay ko'rinmas bo'lib qolgan edi.
+    Ekranda sinab ko'rishda topildi. Tuzatish: ortiqcha
+    `className="!text-white"` olib tashlandi — "outline"ning standart
+    to'q matn rangi oq fonda tabiiy ravishda o'qiladigan.
+- Brauzerda haqiqiy admin hisobi bilan to'liq sinovdan o'tkazildi: Word
+  import ko'p qatorli Izoh bilan (standalone skript orqali, fayl yuklash
+  UI'sini avtomatlashtirish brauzer cheklovi tufayli to'g'ridan-to'g'ri
+  imkonsiz bo'lgani uchun), PDF parser wiring, sozlash ekranidagi jonli
+  savol-soni hisoblagichi (2 ta izohli savol to'g'ri topildi), to'liq
+  sessiya oqimi (2 savol, har biri reveal→tushuntirish→keyingi),
+  taymersiz va ✕-orqali-chiqish yo'llari, `smart_sessiyalar`ga yozuv
+  (`service_role` skript orqali bazadan tasdiqlangan). Sinov uchun
+  yaratilgan admin hisobi va sessiya jurnali yozuvlari keyin tozalab
+  tashlandi; sinovda ishlatilgan ikkita mavjud savolga qo'shilgan
+  Izoh/"Eslab qoling" matni ataylab saqlab qolindi (haqiqiy kontent,
+  Smart Testda foydali).

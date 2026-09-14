@@ -4,6 +4,7 @@ import { useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -12,7 +13,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ImportNatijaJadvali } from "@/components/admin/import-natija-jadvali";
-import { wordFayliniTahlilQilish, type ImportQatori } from "@/lib/actions/import";
+import {
+  wordFayliniTahlilQilish,
+  pdfFayliniTahlilQilish,
+  type ImportQatori,
+} from "@/lib/actions/import";
 import { royxatdanItemlar } from "@/lib/utils/select-items";
 import type { Mavzu } from "@/lib/actions/spravochniklar";
 
@@ -21,11 +26,19 @@ interface Nomlangan {
   nomi: string;
 }
 
-export function ImportWordClient({
+/**
+ * Word (.docx) va PDF import ekranlari deyarli bir xil (fan/sinf/mavzu
+ * tanlash, fayl yuklash, ko'rib chiqish jadvali) — faqat qabul qilingan
+ * kengaytma va chaqiriladigan server action farq qiladi, shu sababli
+ * ikkalasi ham shu bitta komponentdan foydalanadi (smart-test.md 7-bo'lim).
+ */
+export function ImportHujjatClient({
+  turi,
   fanlar,
   sinflar,
   mavzular,
 }: {
+  turi: "word" | "pdf";
   fanlar: Nomlangan[];
   sinflar: Nomlangan[];
   mavzular: Mavzu[];
@@ -34,6 +47,7 @@ export function ImportWordClient({
   const [fanId, setFanId] = useState("");
   const [sinfId, setSinfId] = useState("");
   const [mavzuId, setMavzuId] = useState("");
+  const [agarJavobYoqBolsaA, setAgarJavobYoqBolsaA] = useState(false);
   const [tahlilQilinmoqda, setTahlilQilinmoqda] = useState(false);
   const [faylNomi, setFaylNomi] = useState<string | null>(null);
   const [qatorlar, setQatorlar] = useState<ImportQatori[] | null>(null);
@@ -56,11 +70,13 @@ export function ImportWordClient({
     try {
       const formData = new FormData();
       formData.append("fayl", fayl);
-      const natija = await wordFayliniTahlilQilish(
+      const tahlilQilish = turi === "word" ? wordFayliniTahlilQilish : pdfFayliniTahlilQilish;
+      const natija = await tahlilQilish(
         formData,
         Number(fanId),
         Number(sinfId),
         mavzuId ? Number(mavzuId) : null,
+        agarJavobYoqBolsaA,
       );
       if (natija.xato) {
         toast.error(natija.xato);
@@ -82,7 +98,7 @@ export function ImportWordClient({
   if (qatorlar && faylNomi) {
     return (
       <ImportNatijaJadvali
-        turi="word"
+        turi={turi}
         faylNomi={faylNomi}
         qatorlar={qatorlar}
         yangiFaylTanlash={yangiFaylTanlash}
@@ -95,9 +111,29 @@ export function ImportWordClient({
       <p className="text-sm text-muted-foreground">
         Format qat&apos;iy: <code>1. Savol matni</code>, keyingi qatorlarda{" "}
         <code>A) variant</code> … <code>D) variant</code>, so&apos;ngida{" "}
-        <code>Javob: B</code>. Word faylida fan/sinf/mavzu ko&apos;rsatilmaydi — shuning uchun
-        yuklashdan oldin shu yerda tanlanadi.
+        <code>Javob: B</code> va ixtiyoriy <code>Izoh: ...</code> (bir necha qatorli bo&apos;lishi
+        mumkin — Smart Test modulida ishlatiladi).{" "}
+        {turi === "word" ? "Word" : "PDF"} faylida fan/sinf/mavzu ko&apos;rsatilmaydi — shuning
+        uchun yuklashdan oldin shu yerda tanlanadi.
+        {turi === "pdf" && (
+          <>
+            {" "}
+            PDF&apos;dan matn ajratish Word&apos;ga qaraganda ancha ishonchsiz — imkon bo&apos;lsa
+            Word fayl tavsiya etiladi.
+          </>
+        )}
       </p>
+
+      <div className="flex items-center gap-2">
+        <Checkbox
+          id="agar-javob-yoq-bolsa-a"
+          checked={agarJavobYoqBolsaA}
+          onCheckedChange={(v) => setAgarJavobYoqBolsaA(Boolean(v))}
+        />
+        <Label htmlFor="agar-javob-yoq-bolsa-a" className="font-normal">
+          &quot;Javob:&quot; qatori bo&apos;lmasa, A variantni to&apos;g&apos;ri deb hisobla
+        </Label>
+      </div>
 
       <div className="flex flex-wrap items-end gap-2">
         <div className="flex flex-col gap-1">
@@ -172,7 +208,7 @@ export function ImportWordClient({
         <Input
           ref={inputRef}
           type="file"
-          accept=".docx"
+          accept={turi === "word" ? ".docx" : ".pdf"}
           className="max-w-xs"
           onChange={faylTanlandi}
           disabled={tahlilQilinmoqda}

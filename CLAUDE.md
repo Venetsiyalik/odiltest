@@ -1129,3 +1129,157 @@ Smart Testda ham ko'radi. Dashboard kartasi ham talaba tomonida emas,
   tashlandi; sinovda ishlatilgan ikkita mavjud savolga qo'shilgan
   Izoh/"Eslab qoling" matni ataylab saqlab qolindi (haqiqiy kontent,
   Smart Testda foydali).
+
+---
+
+## Bilim g'ildiragi (`bilim-gildiragi.md`, `feat/gildirak`)
+
+Smart Test bilan bir oilada ("bir xil ko'rinish" — 2×2 variant to'ri,
+tema ranglari, admin-gated arxitektura), lekin alohida ishlaydi — o'qituvchi
+boshqaradigan, o'quvchi ismini g'ildirak orqali tasodifiy tanlaydigan sinf
+o'yini. To'liq matn: `bilim-gildiragi.md`. Smart Test kabi butunlay
+`/admin` panelida ishlaydi (login talab qiladi) — bu yerda sabab boshqacha:
+G'ildirak API'si o'quvchi ismlarini (shaxsiy bo'lmasa-da) va to'g'ri
+javoblarni yuboradi, hujjatning o'zi ham buni "faqat autentifikatsiyadan
+o'tgan o'qituvchi uchun" deb talab qilgan (10-bo'lim) — alohida savol-
+javob talab qilinmadi, Smart Test'dan keyin allaqachon o'rnatilgan qoida.
+
+**Sxema moslashuvi:** hujjatning 8-bo'limidagi SQL namunasi
+`profillar(id)`ga ishora qiladi — bu loyihada bunday jadval yo'q (haqiqiy
+jadval `foydalanuvchilar`, 0001_init.sql). Migratsiyada shunga to'g'irlab
+qo'yildi.
+
+- **Migratsiya** (`0009_gildirak.sql`): `gildirak_sessiyalar`,
+  `gildirak_natijalar`, `yordam_topshiriqlari` — uchalasi ham butunlay
+  yangi, mavjud jadvallarga tegilmagan. `yordam_topshiriqlari` RLS'i
+  boshqacha: talaba tomoni (kirish kodi, Supabase Auth'siz) uni
+  `service_role` orqali o'qiydi — xuddi `progress`/`mashq_sessiyalar`
+  kabi (`lib/talaba/yordam-topshiriqlari.ts`).
+- **Sozlash ekrani** (`/admin/gildirak`,
+  `components/admin/gildirak-sozlash.tsx`): sinf/fan/mavzu (Smart Test
+  bilan bir xil pattern) + `oquvchilarniOl(sinfId)` orqali kelgan
+  davomat ro'yxati ("Bugun kim yo'q?" — belgilanganlar QATNASHMAYDI,
+  standart holat — hammasi qatnashadi) + raqamlar soni (12/20/30) +
+  omadli raqamlar (ixtiyoriy, 15%) + baho qo'yish rejimi. BOSHLASH
+  bosilganda: `gildirakSessiyasiniBoshlash()` bilan sessiya yaratiladi,
+  savollar poolidan (Smart Test'dagi kabi, lekin izoh mavjudligi shart
+  emas) tasodifiy N tasi tanlanadi va raqamlarga biriktiriladi (takror
+  yo'q — bir martalik `royxatniAralashtirish`+slice), natija
+  `sessionStorage`ga yoziladi.
+- **G'ildirak komponenti** (`components/admin/gildirak-wheel.tsx`):
+  ≤20 qatnashuvchi — SVG pie-slice g'ildirak (`<path>` yoylari qo'lda
+  trigonometriya bilan hisoblangan, matn `rotate()+translate()` bilan
+  radial joylashtirilgan); >20 — vertikal "slot mashinasi" ro'yxati
+  (uzun takrorlangan ro'yxat + `translateY` orqali tanlangan ismga
+  qadar siljish). Ikkalasi ham bitta CSS `transition` bilan aylanadi
+  (`cubic-bezier(0.15,0.9,0.25,1)`, 4s) — hech qanday kadr-baholik
+  JavaScript hisob yo'q (4.4-bo'lim talabi). Tasodifiy tanlash
+  `crypto.getRandomValues()` orqali (4.5-bo'lim, aniq talab qilingan
+  API). Tanlangandan keyin ism katta bo'lib chiqadi,
+  [Qayta aylantirish] (natijani bekor qiladi — "chiqqanlar"dan olib
+  tashlaydi) / [Doskaga chiq!] tanlovi beriladi.
+- **Raqamlar ekrani** (`components/admin/gildirak-raqamlar.tsx`):
+  N ta rangli katak, bosilganda `rotateY` flip animatsiyasi (400ms)
+  keyin savol yoki (omadli bo'lsa) sovg'a ekraniga o'tadi.
+- **Savol ekrani**: `components/admin/gildirak-variant-panjarasi.tsx` —
+  Smart Test'ning 2×2 to'ridan farqi, bu yerda **o'quvchi o'zi bosadi**
+  (mashq/organishdagi `VariantTugmalari`ning click-to-answer
+  semantikasi, lekin 2×2 grid ko'rinishida). Javob tanlangandan 1.2s
+  keyin avtomatik to'g'ri/xato ekraniga o'tadi.
+  - **Topilgan va tuzatilgan bug (ikki marta, bir xil sinf xatosi):**
+    variantlar har safar aralashtiriladi (`variantniAralashtir()`,
+    ko'rsatilgan pozitsiya -> asl harf xaritasi, `xarita`). (1) Javob
+    to'g'riligini tekshirishda bosilgan KO'RSATILGAN harf to'g'ridan-
+    to'g'ri `savol.togriJavob` (ASL harf) bilan solishtirilgan edi —
+    aralashtirish asl holatini o'zgartirmagan holatlarda tasodifan
+    to'g'ri natija bergani uchun bug darhol bilinmadi, lekin ekranda
+    boshqa aralashtirish natijasida (masalan to'g'ri javob B dan A
+    pozitsiyasiga tushganda) o'quvchi to'g'ri javobni bossa ham "xato"
+    deb hisoblanardi. Tuzatish: bosilgan harfni avval `xarita` orqali
+    asl harfga o'girib, keyin solishtirish. (2) Xuddi shu sabab bilan,
+    to'g'ri javobni EKRANDA BELGILASH (reveal) qismida ham asl harfni
+    ko'rsatilgan harf sifatida noto'g'ri talqin qilingan edi (teskari
+    yo'nalishda qidiruv o'rniga to'g'ridan-to'g'ri indekslash) —
+    natijada boshqa aralashtirishda ekранда butunlay boshqa (noto'g'ri)
+    variant "to'g'ri" deb ko'rsatilardi, bosilgan javobdan qat'i nazar.
+    Ikkalasi ham brauzerda haqiqiy sinov paytida topildi (ekranda
+    ko'rinib turgan to'g'ri javob bilan bazadagi haqiqiy to'g'ri javob
+    mos kelmasligi payqalib) va alohida-alohida tuzatildi; tuzatilgandan
+    keyin bir nechta marta turli aralashtirish natijalari bilan qayta
+    sinovdan o'tkazilib, ekrandagi ✓ belgisi va bazaga yoziladigan
+    `togri` maydoni har doim bir-biriga mos kelishi tasdiqlandi.
+- **To'g'ri javob ekrani**: BARAKALLA, Sherbek `kubok`+`sakrash`,
+  ⭐5⭐, konfetti (mavjud `Konfetti` komponenti qayta ishlatildi — 24
+  bo'lak, hujjatning "30 tadan ko'p bo'lmasin" chegarasiga mos).
+- **Xato javob ekrani** ("Yaqin edi, {ism}!" — "xato"/"noto'g'ri" so'zi
+  YO'Q, fon qizil EMAS, 2-bo'lim pedagogik qoidasi): to'g'ri javob va
+  izoh darhol ko'rsatiladi, Sherbek `maslahat` (`yigi` EMAS), yordam
+  topshirig'i darhol yaratiladi (`gildirakYordamTopshirigiYaratish()`)
+  va ekranda karta + "Topshiriqni chop etish" havolasi ko'rinadi.
+  - **Yordam matni manbai** (6.4-bo'lim tartibidan soddalashtirilgan):
+    mavzuning `uyga_vazifa`i bo'lsa o'shani, aks holda umumiy
+    "darslikni qayta ko'rib chiqing va mashq qiling" taklifini
+    ishlatadi — hujjatdagi 3-bosqichli zanjirning (uyga_vazifa →
+    o'quv materiallari → 5 ta qiyinlik=1 mashq savoli ro'yxati)
+    ikkinchi va uchinchi bosqichlari vaqt tejash uchun amalga
+    oshirilmadi, chunki 2-bo'limning asosiy talabi ("bola quruq
+    qaytmasin, tushuntirish olsin") allaqachon birinchi bosqich va
+    darhol ko'rsatiladigan izoh orqali qondiriladi.
+  - **+5 XP har doim** (2.3-band: "xato javobdan keyin ham o'quvchi
+    bir narsa yutadi"): `xpBerish(oquvchiId, 5, "gildirak_urinish")`
+    ham to'g'ri, ham xato javobda chaqiriladi — mavjud gamifikatsiya
+    tizimiga (`lib/redizayn/gamifikatsiya.ts`) yagona integratsiya
+    nuqtasi, bu yerda ham (Smart Test'dan farqli o'laroq) haqiqiy
+    o'quvchi XP'siga ta'sir qiladi, chunki G'ildirak (Smart Test'dan
+    farqli) haqiqiy `oquvchilar` yozuvlariga bog'langan.
+- **Yordam topshirig'i — talaba tomonida ko'rinishi**: yangi
+  `components/student/topshiriq-banner.tsx` + `app/talaba/menyu/
+  page.tsx`ga qo'shildi — kirish kodi bilan kirgan o'quvchi
+  bajarilmagan topshiriqlarini ko'radi ("📋 Sizga N ta yordam
+  topshirig'i bor"), "Bajarildi deb belgilash" tugmasi bilan
+  yashiradi. Yangi matnlar (`talaba.menyu.topshiriqBor`/
+  `topshiriqBajarildi`) mavjud i18n tizimiga (`uz.ts`/`ru.ts`)
+  qo'shildi — kod ichida qattiq kodlangan matn yozilmadi (loyihaning
+  o'zgarmas qoidasi).
+- **"Topshiriqni chop etish"**: loyihada `window.print()` konvensiyasi
+  yo'qligi tekshirilgandan keyin, mavjud PDF hisobot patterniga
+  (`lib/pdf/documents/*.tsx` + `app/api/hisobot/pdf/*` route'lari, xuddi
+  `KirishKodlari.tsx`/`kodlar/route.tsx` kabi) mos qilib yangi
+  `UygaVazifaKartasi.tsx` + `/api/hisobot/pdf/uyga-vazifa` qo'shildi —
+  A5 o'lchamli, bitta o'quvchi uchun bitta karta, DejaVu Sans shrifti
+  bilan (kirill/lotin xavfsiz).
+- **Baho qo'yish — ikki bosqichli tasdiqlash** (8-bo'lim ehtiyotkorligi:
+  "avtomatik baho qo'yish xavfli"): har bir to'g'ri javobda
+  `gildirak_natijalar.baho=5, tasdiqlandi=false` yoziladi — ekranda
+  darhol ko'rinadi, lekin "yakuniy" hisoblanmaydi. Sessiya
+  tugaganda (✕ orqali yoki hamma o'quvchi chiqib bo'lgach), agar
+  "tasdiqlash" rejimi tanlangan bo'lsa, yakun ekranida har bir
+  bahoni ko'rish/tahrirlash mumkin (`gildirakBahoniOzgartirish`) va
+  faqat [Jurnalga yozish] bosilgandan keyin `tasdiqlandi=true` +
+  `gildirak_sessiyalar.jurnalga_yozildi=true` bo'ladi
+  (`gildirakSessiyaniYakunlash`). "Faqat ekranda" rejimida esa hech
+  qanday tasdiqlashsiz, `gildirakSessiyaniBekorYopish` bilan sessiya
+  shunchaki yopiladi. **Muhim izoh:** bu "jurnal" mavjud rasmiy
+  baholash pipeline'iga (`urinishlar`/`natijalar`/PDF tabellar)
+  UMUMAN ULANMAGAN — o'z-o'zicha yopiq, faqat shu modul doirasidagi
+  "tasdiqlangan" belgisi (hujjat buni alohida rasmiy jurnal tizimiga
+  integratsiya qilishni talab qilmagan, "alohida ishlaydi" header
+  izohiga mos).
+- Brauzerda haqiqiy admin hisobi, real 5-B sinfi (mavjud "Aliyev
+  Sardor" + sinov uchun qo'shilgan ikkita vaqtinchalik o'quvchi) va
+  Smart Test testlaridan qolgan izohli savollar bilan to'liq sinovdan
+  o'tkazildi: g'ildirak aylanishi (3 va undan kam qatnashuvchida SVG
+  rejimi), "bir marta tanlanmaydi" qoidasi, "Qayta aylantirish",
+  raqamlar to'ri, savol ekrani (ikkala bug tuzatilgandan keyin to'g'ri
+  ishlashi qayta-qayta tasdiqlangan), BARAKALLA va "Yaqin edi" ekranlari,
+  yordam topshirig'i yaratilishi + PDF endpoint (200 OK), talaba
+  tomonidagi bildirishnoma ("Bajarildi deb belgilash" bilan birga), va
+  yakun ekranidagi baho tasdiqlash + "Jurnalga yozish" oqimi — bazadan
+  tasdiqlangan (`tasdiqlandi`/`jurnalga_yozildi` to'g'ri o'rnatilgan).
+  **Chuqur sinovdan o'tkazilmagan** (past xavfli, sof arifmetik/allaqachon
+  ko'rib chiqilgan kod, UI avtomatlashtirish cheklovi tufayli): "omadli
+  raqamlar" sovg'a yo'li va "faqat ekranda ko'rsatilsin" bahosiz-yopish
+  yo'li — ikkalasi ham qo'lda ko'rib chiqildi va to'g'ri deb topildi,
+  lekin brauzerda checkbox/radio bosilishi ishonchli avtomatlashtirilmadi.
+  Sinov uchun yaratilgan hisob, o'quvchilar va barcha sessiya/natija/
+  topshiriq yozuvlari keyin to'liq tozalab tashlandi.

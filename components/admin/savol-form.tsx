@@ -37,6 +37,7 @@ const BOSH_QIYMAT = {
   togriJavob: "A" as "A" | "B" | "C" | "D",
   qiyinlik: "1",
   izoh: "",
+  izohQisqa: "",
 };
 
 export function SavolForma({
@@ -68,12 +69,17 @@ export function SavolForma({
           togriJavob: mavjudSavol.togri_javob,
           qiyinlik: String(mavjudSavol.qiyinlik),
           izoh: mavjudSavol.izoh ?? "",
+          izohQisqa: mavjudSavol.izoh_qisqa ?? "",
         }
       : BOSH_QIYMAT,
   );
   const [rasmFayl, setRasmFayl] = useState<File | null>(null);
   const [rasmOldindanKorish, setRasmOldindanKorish] = useState<string | null>(
     mavjudSavol?.rasm_url ?? null,
+  );
+  const [izohRasmFayl, setIzohRasmFayl] = useState<File | null>(null);
+  const [izohRasmOldindanKorish, setIzohRasmOldindanKorish] = useState<string | null>(
+    mavjudSavol?.izoh_rasm_url ?? null,
   );
   const [saqlanmoqda, setSaqlanmoqda] = useState(false);
 
@@ -123,6 +129,25 @@ export function SavolForma({
         rasmUrl = supabase.storage.from("savol-rasmlari").getPublicUrl(yol).data.publicUrl;
       }
 
+      let izohRasmUrl = mavjudSavol?.izoh_rasm_url ?? null;
+
+      if (izohRasmFayl) {
+        const supabase = createClient();
+        const kengaytma = izohRasmFayl.name.split(".").pop();
+        const yol = `izohlar/${Date.now()}-${Math.random().toString(36).slice(2)}.${kengaytma}`;
+        const { error: yuklashXatosi } = await supabase.storage
+          .from("savol-rasmlari")
+          .upload(yol, izohRasmFayl);
+
+        if (yuklashXatosi) {
+          toast.error(`Izoh rasmini yuklashda xato: ${yuklashXatosi.message}`);
+          setSaqlanmoqda(false);
+          return;
+        }
+
+        izohRasmUrl = supabase.storage.from("savol-rasmlari").getPublicUrl(yol).data.publicUrl;
+      }
+
       const natija = await saqlash({
         fanId: Number(forma.fanId),
         sinfId: Number(forma.sinfId),
@@ -135,6 +160,8 @@ export function SavolForma({
         togriJavob: forma.togriJavob,
         qiyinlik: Number(forma.qiyinlik),
         izoh: forma.izoh || null,
+        izohQisqa: forma.izohQisqa || null,
+        izohRasmUrl,
         rasmUrl,
       });
 
@@ -296,6 +323,38 @@ export function SavolForma({
           value={forma.izoh}
           onChange={(e) => maydonYangilash("izoh", e.target.value)}
         />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label>Eslab qoling — qisqa xulosa (ixtiyoriy, Smart Test uchun)</Label>
+        <Textarea
+          rows={1}
+          value={forma.izohQisqa}
+          onChange={(e) => maydonYangilash("izohQisqa", e.target.value)}
+        />
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <Label>Izoh rasmi (ixtiyoriy)</Label>
+        <Input
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          onChange={(e) => {
+            const fayl = e.target.files?.[0] ?? null;
+            setIzohRasmFayl(fayl);
+            if (fayl) setIzohRasmOldindanKorish(URL.createObjectURL(fayl));
+          }}
+        />
+        {izohRasmOldindanKorish && (
+          <Image
+            src={izohRasmOldindanKorish}
+            alt="Izoh rasmi"
+            width={200}
+            height={120}
+            className="mt-2 max-h-32 w-auto rounded border object-contain"
+            unoptimized
+          />
+        )}
       </div>
 
       <DialogFooter>

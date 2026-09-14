@@ -2,7 +2,7 @@ import { redirect } from "next/navigation";
 import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
 import { fanlarniOl, sinflarniOl, mavzularniOl } from "@/lib/actions/spravochniklar";
 import { ImportExcelClient } from "@/components/admin/import-excel-client";
-import { ImportWordClient } from "@/components/admin/import-word-client";
+import { ImportHujjatClient } from "@/components/admin/import-hujjat-client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function SavollarImportPage() {
@@ -23,6 +23,7 @@ export default async function SavollarImportPage() {
         <TabsList>
           <TabsTrigger value="excel">Excel / CSV</TabsTrigger>
           <TabsTrigger value="word">Word (.docx)</TabsTrigger>
+          <TabsTrigger value="pdf">PDF</TabsTrigger>
         </TabsList>
 
         <TabsContent value="excel" className="pt-4">
@@ -30,7 +31,11 @@ export default async function SavollarImportPage() {
         </TabsContent>
 
         <TabsContent value="word" className="pt-4">
-          <ImportWordClient fanlar={fanlar} sinflar={sinflar} mavzular={mavzular} />
+          <ImportHujjatClient turi="word" fanlar={fanlar} sinflar={sinflar} mavzular={mavzular} />
+        </TabsContent>
+
+        <TabsContent value="pdf" className="pt-4">
+          <ImportHujjatClient turi="pdf" fanlar={fanlar} sinflar={sinflar} mavzular={mavzular} />
         </TabsContent>
       </Tabs>
     </main>

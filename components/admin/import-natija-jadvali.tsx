@@ -33,7 +33,7 @@ export function ImportNatijaJadvali({
   qatorlar,
   yangiFaylTanlash,
 }: {
-  turi: "excel" | "word";
+  turi: "excel" | "word" | "pdf";
   faylNomi: string;
   qatorlar: ImportQatori[];
   yangiFaylTanlash: () => void;
@@ -48,7 +48,8 @@ export function ImportNatijaJadvali({
     const tayyor = qatorlar.filter((q) => q.holati === "tayyor").length;
     const ogohlantirish = qatorlar.filter((q) => q.holati === "ogohlantirish").length;
     const xato = qatorlar.filter((q) => q.holati === "xato").length;
-    return { tayyor, ogohlantirish, xato };
+    const izohsiz = qatorlar.filter((q) => !q.izoh).length;
+    return { tayyor, ogohlantirish, xato, izohsiz };
   }, [qatorlar]);
 
   function belgilash(tartib: number, holat: boolean) {
@@ -133,6 +134,11 @@ export function ImportNatijaJadvali({
         <span>⚠️ Ogohlantirish: {hisob.ogohlantirish}</span>
         <span className="text-destructive">❌ Xato: {hisob.xato}</span>
       </div>
+      {hisob.izohsiz > 0 && (
+        <p className="text-sm text-muted-foreground">
+          ⚠️ {hisob.izohsiz} ta savolda izoh yo&apos;q — ular Smart Testda tushuntirishsiz chiqadi
+        </p>
+      )}
 
       <div className="max-h-[50vh] overflow-y-auto rounded-md border">
         <Table>
@@ -143,8 +149,9 @@ export function ImportNatijaJadvali({
               <TableHead>Savol</TableHead>
               <TableHead>Fan / Sinf / Mavzu</TableHead>
               <TableHead>To&apos;g&apos;ri</TableHead>
-              <TableHead>Holati</TableHead>
               <TableHead>Izoh</TableHead>
+              <TableHead>Holati</TableHead>
+              <TableHead>Xabar</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -166,6 +173,9 @@ export function ImportNatijaJadvali({
                   {q.mavzuNomi ? ` / ${q.mavzuNomi}` : ""}
                 </TableCell>
                 <TableCell>{q.togriJavob}</TableCell>
+                <TableCell className="text-sm">
+                  {q.izoh ? `✓ ${q.izoh.length} belgi` : "⚠️ izoh yo'q"}
+                </TableCell>
                 <TableCell>
                   <Badge variant={HOLATI_YORLIQ[q.holati].variant}>
                     {HOLATI_YORLIQ[q.holati].matn}

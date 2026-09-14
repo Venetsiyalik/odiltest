@@ -1,20 +1,24 @@
 import { redirect } from "next/navigation";
-import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
+import { joriyFoydalanuvchiniOl, joriyKirishDoirasiniOl } from "@/lib/auth/admin";
 import { fanlarniOl, sinflarniOl } from "@/lib/actions/spravochniklar";
 import { testlarniOl } from "@/lib/actions/testlar";
 import { natijalarniOl, engQiyinSavollarniOl, engSustMavzularniOl } from "@/lib/actions/natijalar";
 import { NatijalarClient } from "@/components/admin/natijalar-client";
+import { doiraBoyichaFiltrlash } from "@/lib/utils/select-items";
 
 export default async function NatijalarPage() {
   const foydalanuvchi = await joriyFoydalanuvchiniOl();
   if (!foydalanuvchi) redirect("/kirish");
 
-  const [fanlar, sinflar, testlar, natijalar] = await Promise.all([
+  const [xomFanlar, xomSinflar, testlar, natijalar, doira] = await Promise.all([
     fanlarniOl(),
     sinflarniOl(),
     testlarniOl(),
     natijalarniOl(),
+    joriyKirishDoirasiniOl(),
   ]);
+  const fanlar = doiraBoyichaFiltrlash(xomFanlar, doira.fanlar, doira.cheklanganmi);
+  const sinflar = doiraBoyichaFiltrlash(xomSinflar, doira.sinflar, doira.cheklanganmi);
 
   const urinishIdlar = natijalar.map((n) => n.urinishId);
   const [qiyinSavollar, sustMavzular] = await Promise.all([

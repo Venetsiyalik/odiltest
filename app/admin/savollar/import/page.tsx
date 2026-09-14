@@ -1,19 +1,23 @@
 import { redirect } from "next/navigation";
-import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
+import { joriyFoydalanuvchiniOl, joriyKirishDoirasiniOl } from "@/lib/auth/admin";
 import { fanlarniOl, sinflarniOl, mavzularniOl } from "@/lib/actions/spravochniklar";
 import { ImportExcelClient } from "@/components/admin/import-excel-client";
 import { ImportHujjatClient } from "@/components/admin/import-hujjat-client";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { doiraBoyichaFiltrlash } from "@/lib/utils/select-items";
 
 export default async function SavollarImportPage() {
   const foydalanuvchi = await joriyFoydalanuvchiniOl();
   if (!foydalanuvchi) redirect("/kirish");
 
-  const [fanlar, sinflar, mavzular] = await Promise.all([
+  const [xomFanlar, xomSinflar, mavzular, doira] = await Promise.all([
     fanlarniOl(),
     sinflarniOl(),
     mavzularniOl(),
+    joriyKirishDoirasiniOl(),
   ]);
+  const fanlar = doiraBoyichaFiltrlash(xomFanlar ?? [], doira.fanlar, doira.cheklanganmi);
+  const sinflar = doiraBoyichaFiltrlash(xomSinflar ?? [], doira.sinflar, doira.cheklanganmi);
 
   return (
     <main className="mx-auto flex max-w-4xl flex-col gap-6 p-8">

@@ -1,18 +1,20 @@
 import { redirect } from "next/navigation";
-import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
+import { joriyFoydalanuvchiniOl, joriyKirishDoirasiniOl } from "@/lib/auth/admin";
 import { fanlarniOl, sinflarniOl, mavzularniOl } from "@/lib/actions/spravochniklar";
 import { savollarniOl, savolStatistikalariniOl } from "@/lib/actions/savollar";
 import { SavollarClient } from "@/components/admin/savollar-client";
+import { doiraBoyichaFiltrlash } from "@/lib/utils/select-items";
 
 export default async function SavollarPage() {
   const foydalanuvchi = await joriyFoydalanuvchiniOl();
   if (!foydalanuvchi) redirect("/kirish");
 
-  const [fanlar, sinflar, mavzular, savollar] = await Promise.all([
+  const [fanlar, sinflar, mavzular, savollar, doira] = await Promise.all([
     fanlarniOl(),
     sinflarniOl(),
     mavzularniOl(),
     savollarniOl(),
+    joriyKirishDoirasiniOl(),
   ]);
 
   const statistika = await savolStatistikalariniOl(savollar.map((s) => s.id));
@@ -23,8 +25,8 @@ export default async function SavollarPage() {
       <SavollarClient
         boshlangichSavollar={savollar}
         boshlangichStatistika={statistika}
-        fanlar={fanlar}
-        sinflar={sinflar}
+        fanlar={doiraBoyichaFiltrlash(fanlar, doira.fanlar, doira.cheklanganmi)}
+        sinflar={doiraBoyichaFiltrlash(sinflar, doira.sinflar, doira.cheklanganmi)}
         mavzular={mavzular}
       />
     </main>

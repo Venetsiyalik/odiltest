@@ -61,9 +61,13 @@ export interface SmartTestSessiyaMalumoti {
 export function SmartTestSozlash({
   fanlar,
   mavzular,
+  ruxsatEtilganDarajalar,
 }: {
   fanlar: Nomlangan[];
   mavzular: Mavzu[];
+  /** O'qituvchi-paneli: `undefined` — cheklanmagan (admin), aks holda faqat
+   * shu darajalar ko'rsatiladi (o'qituvchining biriktirilgan sinflari). */
+  ruxsatEtilganDarajalar?: number[];
 }) {
   const router = useRouter();
   const [sozlama, setSozlama] = useState<Sozlamalar>(BOSH_SOZLAMALAR);
@@ -231,7 +235,7 @@ export function SmartTestSozlash({
                 }}
               >
                 <option value="">— Tanlang —</option>
-                {DARAJALAR.map((d) => (
+                {(ruxsatEtilganDarajalar ?? DARAJALAR).map((d) => (
                   <option key={d} value={d}>
                     {d}-sinf
                   </option>

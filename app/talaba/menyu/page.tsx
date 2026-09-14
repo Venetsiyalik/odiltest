@@ -4,14 +4,19 @@ import { joriyOquvchiniOl } from "@/lib/auth/student";
 import { TalabaChiqishTugmasi } from "@/components/student/talaba-chiqish-tugmasi";
 import { SinfRejimiTugmasi } from "@/components/student/sinf-rejimi-tugmasi";
 import { TilTugmasi } from "@/components/student/til-tugmasi";
+import { TopshiriqBanner } from "@/components/student/topshiriq-banner";
 import { Logo } from "@/components/ui/Logo";
 import { joriyMatnlarniOlish } from "@/lib/i18n/joriy-til";
+import { oquvchiningTopshiriqlariniOl } from "@/lib/talaba/yordam-topshiriqlari";
 
 export default async function MenyuPage() {
   const oquvchi = await joriyOquvchiniOl();
   if (!oquvchi) redirect("/kirish");
 
-  const matnlar = await joriyMatnlarniOlish();
+  const [matnlar, topshiriqlar] = await Promise.all([
+    joriyMatnlarniOlish(),
+    oquvchiningTopshiriqlariniOl(oquvchi.id),
+  ]);
   const KARTALAR = [
     { href: "/organish", nomi: matnlar.talaba.menyu.organish, emoji: "📚" },
     { href: "/mashq", nomi: matnlar.talaba.menyu.mashq, emoji: "✏️" },
@@ -30,6 +35,14 @@ export default async function MenyuPage() {
           <TalabaChiqishTugmasi />
         </div>
       </header>
+
+      {topshiriqlar.length > 0 && (
+        <TopshiriqBanner
+          topshiriqlar={topshiriqlar}
+          sarlavha={matnlar.talaba.menyu.topshiriqBor(topshiriqlar.length)}
+          bajarildiMatni={matnlar.talaba.menyu.topshiriqBajarildi}
+        />
+      )}
 
       <div className="grid flex-1 grid-cols-1 gap-6 sm:grid-cols-3">
         {KARTALAR.map((karta) => (

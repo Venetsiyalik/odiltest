@@ -34,6 +34,22 @@ export default async function DashboardPage() {
         </div>
         <span className="rounded-xl bg-white/20 px-5 py-3 text-lg font-bold">Boshlash →</span>
       </Link>
+
+      <Link
+        href="/gildirak"
+        className="flex items-center justify-between gap-4 rounded-[28px] p-6 text-white shadow-md transition-transform hover:scale-[1.01]"
+        style={{
+          background: `linear-gradient(to right, ${theme.colors.danger}, ${theme.colors.accent})`,
+        }}
+      >
+        <div className="flex flex-col gap-1">
+          <span className="text-2xl font-extrabold">🎡 Bilim g&apos;ildiragi</span>
+          <span className="text-lg opacity-90">
+            G&apos;ildirak aylanadi, o&apos;quvchi tanlanadi, birga o&apos;rganamiz
+          </span>
+        </div>
+        <span className="rounded-xl bg-white/20 px-5 py-3 text-lg font-bold">Boshlash →</span>
+      </Link>
     </main>
   );
 }

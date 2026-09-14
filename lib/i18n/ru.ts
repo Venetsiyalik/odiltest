@@ -45,6 +45,8 @@ export const ru: Matnlar = {
       sinfRejimiOchirish: "🔍 Классный режим (включён)",
       foydalanuvchi: (ismFamiliya, sinf) => `${ismFamiliya} · ${sinf} класс`,
       sinfLabel: (sinf) => `${sinf} класс`,
+      topshiriqBor: (soni) => `📋 У вас ${soni} доп. задани${soni === 1 ? "е" : "я"}`,
+      topshiriqBajarildi: "Отметить как выполненное",
     },
     dashboard: {
       shaxsiyKabinet: "Личный кабинет",

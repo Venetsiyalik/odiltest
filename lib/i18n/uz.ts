@@ -55,6 +55,8 @@ export interface Matnlar {
       sinfRejimiOchirish: string;
       foydalanuvchi: (ismFamiliya: string, sinf: string) => string;
       sinfLabel: (sinf: string) => string;
+      topshiriqBor: (soni: number) => string;
+      topshiriqBajarildi: string;
     };
     dashboard: {
       shaxsiyKabinet: string;
@@ -207,6 +209,8 @@ export const uz: Matnlar = {
       sinfRejimiOchirish: "🔍 Sinf rejimi (yoqilgan)",
       foydalanuvchi: (ismFamiliya, sinf) => `${ismFamiliya} · ${sinf} sinf`,
       sinfLabel: (sinf) => `${sinf} sinf`,
+      topshiriqBor: (soni) => `📋 Sizga ${soni} ta yordam topshirig'i bor`,
+      topshiriqBajarildi: "Bajarildi deb belgilash",
     },
     dashboard: {
       shaxsiyKabinet: "Shaxsiy kabinet",

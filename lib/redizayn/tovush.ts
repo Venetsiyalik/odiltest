@@ -7,7 +7,15 @@
 
 const YOQILGAN_KALITI = "odil_tovush_yoqilgan";
 
-export type TovushNomi = "togri" | "xato" | "daraja" | "nishon" | "bosish" | "taymer";
+export type TovushNomi =
+  | "togri"
+  | "xato"
+  | "daraja"
+  | "nishon"
+  | "bosish"
+  | "taymer"
+  | "gildirak_aylanish"
+  | "gildirak_toxtash";
 
 export function tovushYoqilganmi(): boolean {
   if (typeof window === "undefined") return false;

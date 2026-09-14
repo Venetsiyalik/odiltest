@@ -1283,3 +1283,104 @@ qo'yildi.
   lekin brauzerda checkbox/radio bosilishi ishonchli avtomatlashtirilmadi.
   Sinov uchun yaratilgan hisob, o'quvchilar va barcha sessiya/natija/
   topshiriq yozuvlari keyin to'liq tozalab tashlandi.
+
+---
+
+## O'qituvchi paneli (`feat/oqituvchi-paneli`)
+
+Foydalanuvchi so'rovi bilan qo'shildi: admin barcha imkoniyatlarini
+saqlab qolib, direktor o'zi login/parol yaratib beradigan **o'qituvchi**
+hisoblari ham deyarli hamma narsani (savol/test qo'shish, o'quvchi
+ro'yxatini boshqarish, Smart Test/G'ildirak) qila oladigan, lekin
+**"teacher biriktirish" (fan+sinf tayinlash) faqat adminda** qoladigan
+qilib qurildi.
+
+**Muhim topilma — arxitektura allaqachon tayyor edi:** asl texnik
+topshiriqning birinchi migratsiyalari (`0001_init.sql`,
+`0003_mavzular_oqituvchi_huquqi.sql`) `foydalanuvchilar.rol`
+(`admin`/`oqituvchi`) va `biriktirish` (o'qituvchi→fan+sinf tayinlash)
+jadvallarini, shuningdek `is_oqituvchi_biriktirilgan(fan_id, sinf_id)`
+SQL yordamchisini va unga asoslangan to'g'ri RLS siyosatlarini
+(`savollar`, `testlar`, `mavzular`, `dars_materiallari` va h.k.)
+birinchi kundanoq qamrab olgan edi — biroq `oqituvchi` rolidagi bironta
+haqiqiy hisob hech qachon yaratilmagani uchun bu butun infratuzilma
+amalda bir marta ham ishlatilmagan edi. Shu sababli bu bosqichning asosiy
+ishi yangi ruxsat tizimi loyihalash emas, balki (1) yetishmayotgan
+hisob-yaratish/biriktirish UI'sini qurish, (2) auditda topilgan haqiqiy
+RLS bo'shliqlarini yopish va (3) dropdownlarni o'qituvchining haqiqiy
+ruxsat doirasiga oldindan filtrlash edi.
+
+- **Migratsiya** (`0010_oqituvchi_paneli.sql`): yangi
+  `is_oqituvchi_sinfga_biriktirilgan(p_sinf_id)` SQL funksiyasi (mavjud
+  `is_oqituvchi_biriktirilgan(fan_id, sinf_id)`ning sinf-only varianti —
+  `oquvchilar` jadvalida `fan_id` yo'q, chunki o'quvchi fanga emas, sinfga
+  tegishli). Bu orqali `oquvchilar` uchun yetishmagan INSERT/UPDATE/DELETE
+  RLS siyosatlari qo'shildi (avvalgi SELECT siyosati biriktirish bo'yicha
+  to'g'ri cheklangan edi, lekin yozish 100% admin-only edi — endi
+  biriktirilgan o'qituvchi ham o'z sinfidagi o'quvchini qo'sha/tahrirlay/
+  o'chira oladi). Shuningdek `importlar` jadvaliga (ilgari 100%
+  admin-only) o'qituvchining o'z yozuvlarini ko'rish/yozish siyosati
+  qo'shildi.
+- **`lib/actions/foydalanuvchilar.ts`** (yangi) — yagona joy, barcha
+  eksport qilingan funksiya `adminEkanliginiTekshirish()` bilan boshlanadi
+  (bu yerda RLS YO'Q, chunki `createServiceRoleClient()` ishlatiladi —
+  shu tekshiruv yagona ruxsat qatlami). O'qituvchi qo'shish
+  (`auth.admin.createUser` + `foydalanuvchilar` profil yozuvi, ikkinchisi
+  muvaffaqiyatsiz bo'lsa avtomatik `auth.admin.deleteUser` bilan orqaga
+  qaytariladi — mavjud import-fan-rollback patterniga mos), parol
+  almashtirish, faollik o'zgartirish, biriktirish qo'shish/o'chirish.
+  `foydalanuvchilar` jadvalida email ustuni yo'q (asl dizayn — email
+  Supabase'ning ichki `auth.users`ida) — shuning uchun ro'yxat
+  `admin.auth.admin.listUsers()` orqali email bilan qo'shimcha
+  bog'lanadi.
+- **`/admin/foydalanuvchilar`** (ilgari "Tez orada" placeholder edi) —
+  endi to'liq UI: barcha hisoblar jadvali, "Yangi o'qituvchi qo'shish"
+  dialogi, har qatorda parol almashtirish/faollik o'zgartirish/
+  "Biriktirishlar" boshqaruvi (fan+sinf qo'shish/o'chirish) —
+  `components/admin/foydalanuvchilar-client.tsx`. Bu bo'lim qat'iy
+  admin-only bo'lib qoladi (foydalanuvchining o'zi aniq talab qilgan).
+- **Doira bo'yicha filtrlash** (`lib/auth/admin.ts:
+  joriyKirishDoirasiniOl()` + `lib/utils/select-items.ts:
+  doiraBoyichaFiltrlash()`): admin uchun `cheklanganmi: false` (cheksiz),
+  o'qituvchi uchun o'z biriktirishlaridan hisoblangan fan/sinf id
+  ro'yxati. **Muhim:** `cheklanganmi: false` va bo'sh massiv ikki xil
+  holat — bo'sh massivni "hech narsaga ruxsat yo'q" deb talqin qilish
+  yangi yaratilgan (hali biriktirilmagan) o'qituvchi uchun xato natija
+  berardi. Bu filtr `/savollar`, `/savollar/import`, `/oquvchilar`,
+  `/testlar`, `/kontent`, `/materiallar`, `/natijalar`, `/gildirak`
+  sahifalariga qo'shildi — dropdownlar RLS ruxsat bermaydigan fan/sinfni
+  umuman ko'rsatmaydi (chalkash Postgres xatosi o'rniga). `/smart-test`
+  "daraja" abstraktsiyasidan foydalangani uchun alohida moslashtirildi:
+  haqiqiy `sinflar`ni (ilgari bu sahifada umuman o'qilmagan) o'qituvchi
+  biriktirishlariga solishtirib, ruxsat etilgan daraja raqamlarini
+  (`sinfDarajasi()` orqali) hisoblaydi.
+- **Ish reja import** (`/admin/import/ishreja`) va Foydalanuvchilar
+  bo'limi — foydalanuvchi bilan aniq kelishilganidek, **qat'iy admin-only**
+  bo'lib qoladi; Smart Test va G'ildirak esa o'qituvchiga ochiq (mavjud
+  nav — `admin-nav.tsx` — bularni allaqachon ikkala rolga ham ko'rsatib
+  turgan edi, o'zgartirish shart bo'lmadi).
+- **Brauzer test gotchasi (kod xatosi EMAS, faqat o'zim uchun eslatma):**
+  Base UI Select'ning `items` ro'yxatida faqat BITTA element bo'lsa
+  (masalan o'qituvchi bitta fan/sinfga biriktirilganda), trigger tugmasini
+  bosish popup ochib, o'sha yagona variantni "tanlangandek" ko'rsatadi —
+  lekin bu shunchaki hover/keyboard-highlight render, haqiqiy tanlash
+  hodisasi emas. Faqat triggerga bosib screenshot olinsa, tanlov to'g'ri
+  ko'rinadi, lekin qo'shni Select bosilganda avvalgi holat placeholderga
+  qaytadi. To'g'ri usul: `read_page(filter:"all")` orqali ochilgan
+  `listbox` ichidagi haqiqiy `option`ning ekrandagi joylashuvini (odatda
+  trigger ustiga to'g'ridan-to'g'ri anchored) screenshot orqali aniqlab,
+  aynan o'sha koordinataga bosish kerak — refning o'zi ko'pincha
+  `(0,0)`da "viewport tashqarisida" deb xato hisoblanadi, shuning uchun
+  `scroll_to`/ref-click ishlamaydi, faqat koordinata bo'yicha klik
+  ishlaydi.
+- Brauzerda haqiqiy o'qituvchi hisobi (Informatika + 5-B ga biriktirilgan)
+  bilan to'liq sinovdan o'tkazildi: `/oquvchilar` ro'yxati faqat 5-B
+  o'quvchisini ko'rsatishi (mavjud SELECT RLS), yangi INSERT siyosati
+  bo'yicha o'quvchi qo'shish, yangi DELETE siyosati bo'yicha o'chirish,
+  `/savollar`da savol yaratish (yangi savol `created_by` maydonida
+  o'qituvchining o'z ID'si bilan to'g'ri yozilgani bazadan tasdiqlandi),
+  nav'da admin-only bo'limlarning (Foydalanuvchilar, Ish reja import)
+  yashirilgani, Smart Test/G'ildirak kartalarining ko'rinishda qolgani —
+  barchasi tasdiqlandi. Sinov uchun yaratilgan ikkita vaqtinchalik hisob
+  (admin va o'qituvchi), ularning biriktirishlari va test savoli keyin
+  to'liq tozalab tashlandi — haqiqiy "Direktor" admin hisobiga tegilmadi.

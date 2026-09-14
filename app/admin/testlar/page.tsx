@@ -1,21 +1,25 @@
 import { redirect } from "next/navigation";
-import { joriyFoydalanuvchiniOl } from "@/lib/auth/admin";
+import { joriyFoydalanuvchiniOl, joriyKirishDoirasiniOl } from "@/lib/auth/admin";
 import { testlarniOl } from "@/lib/actions/testlar";
 import { fanlarniOl, sinflarniOl, mavzularniOl } from "@/lib/actions/spravochniklar";
 import { savollarniOl } from "@/lib/actions/savollar";
 import { TestlarClient } from "@/components/admin/testlar-client";
+import { doiraBoyichaFiltrlash } from "@/lib/utils/select-items";
 
 export default async function TestlarPage() {
   const foydalanuvchi = await joriyFoydalanuvchiniOl();
   if (!foydalanuvchi) redirect("/kirish");
 
-  const [testlar, fanlar, sinflar, mavzular, savollar] = await Promise.all([
+  const [testlar, xomFanlar, xomSinflar, mavzular, savollar, doira] = await Promise.all([
     testlarniOl(),
     fanlarniOl(),
     sinflarniOl(),
     mavzularniOl(),
     savollarniOl(),
+    joriyKirishDoirasiniOl(),
   ]);
+  const fanlar = doiraBoyichaFiltrlash(xomFanlar ?? [], doira.fanlar, doira.cheklanganmi);
+  const sinflar = doiraBoyichaFiltrlash(xomSinflar ?? [], doira.sinflar, doira.cheklanganmi);
 
   return (
     <main className="mx-auto flex max-w-6xl flex-col gap-6 p-8">

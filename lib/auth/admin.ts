@@ -40,3 +40,40 @@ export async function joriyFoydalanuvchiniOl(): Promise<JoriyFoydalanuvchi | nul
     rol: profil.rol,
   };
 }
+
+export interface KirishDoirasi {
+  /** false — admin, cheklanmagan (quyidagi ro'yxatlar e'tiborsiz qoldiriladi). */
+  cheklanganmi: boolean;
+  fanlar: number[];
+  sinflar: number[];
+  juftliklar: { fanId: number; sinfId: number }[];
+}
+
+/**
+ * Joriy foydalanuvchi qaysi fan+sinf birikmalariga biriktirilganini
+ * qaytaradi — admin/savollar/testlar/oquvchilar formalaridagi fan/sinf
+ * ro'yxatlarini o'qituvchi uchun cheklash uchun (o'qituvchi-paneli).
+ * Admin uchun har doim `cheklanganmi: false` — sahifalar buni "hammasi
+ * ko'rinadi" deb talqin qilishi kerak, bo'sh ro'yxat bilan ADASHTIRILMASIN
+ * (o'qituvchining haqiqatan ham nol biriktirishi bo'lishi mumkin).
+ */
+export async function joriyKirishDoirasiniOl(): Promise<KirishDoirasi> {
+  const foydalanuvchi = await joriyFoydalanuvchiniOl();
+  if (!foydalanuvchi || foydalanuvchi.rol === "admin") {
+    return { cheklanganmi: false, fanlar: [], sinflar: [], juftliklar: [] };
+  }
+
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("biriktirish")
+    .select("fan_id, sinf_id")
+    .eq("foydalanuvchi_id", foydalanuvchi.id);
+
+  const juftliklar = (data ?? []).map((b) => ({ fanId: b.fan_id, sinfId: b.sinf_id }));
+  return {
+    cheklanganmi: true,
+    fanlar: Array.from(new Set(juftliklar.map((j) => j.fanId))),
+    sinflar: Array.from(new Set(juftliklar.map((j) => j.sinfId))),
+    juftliklar,
+  };
+}
